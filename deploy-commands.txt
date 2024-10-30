@@ -1,0 +1,119 @@
+import { REST } from "discord.js";
+import { Routes } from "discord-api-types/v9";
+import { CLIENT_ID, GUILD_ID, TOKEN } from "./src/config/config";
+
+const commands = [
+  {
+    name: "attack",
+    description: "Attack the CEX bugs and destroy their hive.",
+    options: [
+      {
+        name: "choose_action",
+        description: "Choose one to kill these sons of b$?*#s ",
+        type: 3,
+        required: true,
+        choices: [
+          { name: "Assault Rifle INF-1", value: "AssaultRifle" },
+          { name: "Shard Shotgun SG-1S", value: "Gun" },
+          { name: "Abstraction Blaster AB-1A", value: "Blaster" },
+          { name: "Stick", value: "Stick" },
+        ],
+      },
+      {
+        name: "power-level",
+        description:
+          "Set the power level for your attack (higher power = higher risk / reward).",
+        type: 4, // Type 4 for an integer
+        required: true,
+        choices: [
+          { name: "1X", value: 1 },
+          { name: "5X", value: 5 },
+          { name: "10x", value: 10 },
+          { name: "MAXIMUM", value: 100 },
+        ],
+      },
+    ],
+  },
+  {
+    name: "defend",
+    description: "Defend Infinex HQ from CEX bugs.",
+    options: [
+      {
+        name: "choose_action",
+        description: "Choose defend method",
+        type: 3,
+        required: true,
+        choices: [
+          { name: "Patrol Key Shard Perimeter", value: "Attack" },
+          { name: "Abstract & Fortify", value: "BuildWall" },
+          { name: "Trustless Trooper Recovery", value: "SupplyRun" },
+          { name: "Snack", value: "Snacking" },
+        ],
+      },
+      {
+        name: "power-level",
+        description:
+          "Set the power level for your defence (higher power = higher risk / reward).",
+        type: 4, // Type 4 for an integer
+        required: true,
+        choices: [
+          { name: "1X", value: 1 },
+          { name: "5X", value: 5 },
+          { name: "10X", value: 10 },
+          { name: "MAXIMUM", value: 100 },
+        ],
+      },
+    ],
+  },
+
+  {
+    name: "leaderboard",
+    description: "Display the leaderboard of top Infinex Troopers.",
+  },
+  {
+    name: "help",
+    description: "Shows the training manual and bot instructions.",
+  },
+  {
+    name: "howtoplay",
+    description: "How to play the game and more information.",
+  },
+  {
+    name: "points",
+    description: "Displays your current points and territory.",
+  },
+  {
+    name: "wormhole",
+    description: "Travel through a wormhole to another territory.",
+    options: [
+      {
+        name: "destination",
+        description: "The destination territory",
+        type: 3,
+        required: true,
+        choices: [
+          { name: "Testnet (easy)", value: "Testnet" },
+          { name: "Base (medium)", value: "Base" },
+          { name: "Optimism (hard)", value: "Optimism" },
+          { name: "Ethereum (death)", value: "Ethereum" },
+        ],
+      },
+    ],
+  },
+];
+
+const rest = new REST({ version: "9" }).setToken(TOKEN);
+
+(async () => {
+  try {
+    console.log("Started refreshing application (/) commands.");
+
+    await rest.put(Routes.applicationGuildCommands(CLIENT_ID, GUILD_ID), {
+      body: commands,
+    });
+
+    console.log("Successfully reloaded application (/) commands.");
+  } catch (error) {
+    console.error(error);
+  }
+})();

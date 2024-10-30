@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "es2017",
+    "lib": ["ESNext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "outDir": "./build",
+    "incremental": false,
+    "sourceMap": false,
+    "noEmit": false,
+    "moduleResolution": "node",
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "rootDir": "./src",
+    "experimentalDecorators": true
+  },
+  "exclude": ["node_modules", ".yarn"],
+  "include": ["src/**/*.ts"]
+}
