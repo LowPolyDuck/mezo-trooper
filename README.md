@@ -1,12 +1,12 @@
 # Mezo Troopers Game
 
-**Mezo Troopers** is a high-stakes, *Starship Troopers*-inspired Discord game designed for the Mezo ecosystem. In the game, players embody *Mezo Troopers*, defending Bitcoin’s decentralized future across challenging territories, earning points, and competing on a leaderboard. Perfect for fans of crypto and adventure, the game brings BitcoinFi into an interactive universe.
+**Mezo Troopers** is a high-stakes, *Starship Troopers*-inspired Discord game designed for the Mezo ecosystem. In Mezo Trooper, players are guardians of a decentralized Bitcoin economy, battling against “The Fiat Bugs”—entities that embody threats like inflationary fiat money, centralized banking, and restrictive financial controls. These “bugs” are infestations trying to undermine Mezo’s Bitcoin-powered economic layer, attacking by attempting to inject fiat instability, centralization, and surveillance tactics into the system.
 
 ---
 
 ## Gameplay Overview
 
-*Mezo Troopers* throws players into a win-big-or-lose-everything scenario where they fight to gain points across various territories. With each command, players engage with BitcoinFi assets, putting their points at risk to rise through ranks in challenging zones.
+As *Mezo Troopers*, players' mission is to defend Bitcoin’s value and its decentralized nature. Using commands like /attack and /defend, players can face off against these symbolic “bugs” and earn points that represent their contributions to Bitcoin’s integrity. Higher levels or territories might include places like the Yield Frontier or the BitcoinFi Stronghold, representing layers of Bitcoin utility within Mezo’s economy, each with more substantial rewards and risks.
 
 ### How to Play
 
@@ -31,7 +31,6 @@ Players progress through increasingly challenging territories, with each step un
 
 ## Features
 
-- **BitcoinFi Integration**: Utilize Bitcoin-backed assets to interact with decentralized finance on the Bitcoin network.
 - **Leaderboards**: A visible, dedicated leaderboard tracks the top players, updating with each action.
 - **Win Big or Lose Everything**: Failure to defend or succeed means losing all points, making each decision high-stakes.
 - **Strategic Boosts**: Randomized boosts can multiply points when players select the right action, adding a layer of strategy to each command.

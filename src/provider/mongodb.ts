@@ -10,11 +10,6 @@ import { Trooper } from "../types/index";
 
 const mongoUri = `mongodb+srv://${MONGO_USER}:${MONGO_SECRET}${MONGO_URL}`;
 
-// interface Trooper {
-//   userId: string;
-//   points: number;
-//   currentTerritory: string;
-// }
 
 export async function getLeaderBoard(): Promise<Trooper[]> {
   const client = new MongoClient(mongoUri);
@@ -91,7 +86,7 @@ export async function updateAndFetchRanks(): Promise<Trooper[]> {
   }
 
   await client.close();
-  return troopers; // Note: This returns troopers with their new ranks as calculated, but does not re-fetch from the database
+  return troopers; 
 }
 
 export async function insertOrUpdatePlayer(trooper: Trooper): Promise<void> {

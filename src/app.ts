@@ -28,14 +28,16 @@ const discordClient = new Client({
 const cooldowns: Map<string, number> = new Map()
 
 // All Weapon options to choose from
-const weaponOptions = ['AssaultRifle', 'Gun', 'Blaster', 'Stick']
-const defenceOptions = ['Attack', 'BuildWall', 'SupplyRun', 'Snacking']
+const weaponOptions = ['Blaster', 'Cannon', 'Fist', 'Stick']
+const defenceOptions = ['BuildWall', 'SetTrap', 'SupplyRun', 'Snacking']
 const quotes = [
   "Everybody Fights, No One Quits. If You Don't Do Your Job, I'll Kill You Myself.",
-  'Who Needs A Knife when Infinex issues you with Abstracted-Key Nukes!',
-  'A Infinex Trooper Has The Courage To Make The Safety Of The Sharded Keys Their Personal Responsibility.',
-  'Come On, You INFINEX Apes, You Wanna Live Forever?',
-  'The Only Good CEX Bug Is A Dead CEX Bug.',
+  "Stay true to Bitcoin or become obsolete.",
+  "The only thing that kills Fiat is Mezo Troopers!",
+  'Every Trooper protects Bitcoin like their own private key.',
+  'Is decentralization your destiny, Trooper?',
+  'Come On, You Mezo Apes, You Wanna Live Forever?',
+  'The Only Good Fiat Bug Is A Dead Fiat Bug.',
 ]
 
 // ################################################# Start the Bot #################################################
@@ -75,12 +77,12 @@ export async function Run(): Promise<void> {
           await interaction.reply({
             content: `
           **Commands:**
-          \n- \`/attack\`: Launch an attack against the CEX bugs to earn points. Your success and the points you earn depend on your chosen power level and your current territory.
-          \n-  \`/defend\`: Defend your current territory from incoming bugs. Like attacks, your success depends on your power level and territory.
-          \n-  \`/leaderboard\`: Displays the top Infinex Troopers, their points, and territories.
-          \n-  \`/wormhole\`: Travel to another CEX territory. Requires paying gas fees in points.
-          \n- \`/points\`: Displays your current points, territory, and other player stats.
-          \n-  \`/howtoplay\`: Check how to play for more information.`,
+          \n- \`/attack\`: Launch an attack against the Fiat bugs to earn points. Your success and the points you earn depend on your chosen power level and your current territory.
+          \n-  \`/defend\`: Defend your current territory from incoming Fiat bugs. Like attacks, your success depends on your power level and territory.
+          \n-  \`/leaderboard\`: Displays the top Mezo Troopers, their points, and territories.
+          \n-  \`/wormhole\`: Travel to another territory for a fee in points.
+          \n- \`/points\`: Check your current points, territory, and rank.
+          \n-  \`/howtoplay\`: View gameplay instructions and tips.`,
             ephemeral: true,
           })
           break
@@ -88,18 +90,18 @@ export async function Run(): Promise<void> {
           await interaction.reply({
             content: `
           **How to play:**
-          \nWelcome to Infinex Troopers!
-          \nIn a universe where decentralized exchanges (DEXs) battle for supremacy against centralized exchanges (CEXs), you are an Infinex Trooper, defending the realm of decentralized finance against the invasive CEX bugs. Your mission: secure the blockchain territories, earn points, and rise through the ranks of Infinex Troopers.
+          \nWelcome to Mezo Troopers!
+          \nIn a universe where Fiat money battles for supremacy against decentralized coins and tokens, you are a Mezo Trooper, your mission is to protect Bitcoin from the invasion of fiat bugs and centralized systems, preserving Bitcoin’s decentralized future.
           \n**Territories Explained:**
-          \n- Testnet: Your training ground. Lower risk but also lower rewards.
-          \n- Base: The frontline of defense. A step up from Testnet with better rewards.
-          \n- Optimism: A strategic stronghold. Higher risk, but the rewards are significantly greater.
-          \n- Ethereum: The heart of the blockchain. The highest risk but offers the most lucrative rewards.
+          \n- **Satoshi’s Camp**: Training zone with moderate rewards and minimal risk.
+          \n- **Yield Farming Base**: Intermediate zone with higher rewards for defending BitcoinFi.
+          \n- **Lending Command**: High-risk zone linked to BitcoinFi lending activities. Losing here costs all points and results in a territory drop.
+          \n- **Experimental Frontier**: The ultimate zone for testing BitcoinFi assets against Fiat bugs. Maximum points on offer, but losses will send you back to a lower territory.
           \n\n**Moving Between Territories:**
-          \n- Use \`/wormhole\` to travel between territories. Each move requires paying gas fees in points, with higher territories costing more (Testnet: 0, Base: 1000, Optimism: 10000, Ethereum: 100000).
+          \n- Use \`/wormhole\` to travel between territories. Each move requires paying gas fees in points, with higher territories costing more (Satoshi’s Camp: 0, Yield Farming Base: 1000, Lending Command: 10000, Experimental Frontier: 100000).
           \n- Success in a higher territory earns you more points, but failure could mean falling back to a lower territory or losing all of your points.
           \n\n**Gameplay Tips:**
-          \n- Start in Testnet to get the hang of the game with lower risk.
+          \n- Start in Satoshi’s Camp to get the hang of the game with lower risk.
           \n- Consider the risk vs. reward of moving to a higher territory. Higher territories offer more points but come with a greater risk of falling back.
           \n- Keep an eye on the leaderboard to see how you stack up against other players.
           \n- Join the battle, protect the blockchain, and may the best Trooper win!`,
@@ -160,10 +162,10 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
   const trooper = (await getTrooper(userId)) || {
     userId,
     points: 0,
-    currentTerritory: 'Testnet',
+    currentTerritory: 'Satoshi’s Camp',
   }
   const powerLevel = (interaction.options.get('power-level')?.value as number) || 1
-  const userChoice = (interaction.options.get('choose_action')?.value as string) || 'AssaultRifle'
+  const userChoice = (interaction.options.get('choose_action')?.value as string) || 'Blaster'
   console.log(userChoice)
   // Special outcomes for "Stick" or "Snacking"
   if (userChoice === 'Stick' || userChoice === 'Snacking') {
@@ -200,7 +202,7 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
 
       switch (boost) {
         case 'airdrop':
-          messageContent = `\nThe latest sharding INF-1X Assault Rifle was airdropped 🪂 from Infinex, CEX was ${bold(
+          messageContent = `\nThe latest sharding BitcoinFi Assault Rifle was airdropped 🪂 from Mezo, Fiat hive was ${bold(
             'OBLITERATED',
           )}!\n You earned ${bold(pointsChange + ' points')}, Hurray! \nNew total: ${bold(
             trooper.points.toString(),
@@ -209,7 +211,7 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
             'https://media1.tenor.com/m/C0vINUKPPtUAAAAC/dizzy-flores-isabel-flores-isabelle-flores-dina-meyer-starship-troopers.gif'
           break
         case 'grenade':
-          messageContent = `\nTactical INFINEX Abstraction Grenade Deployed, CEX was ${bold(
+          messageContent = `\nTactical Mezo Decentralization Grenade Deployed, Fiat hive was ${bold(
             'NUKED',
           )}!\n You earned ${bold(pointsChange + ' points')}, Hurray! \nNew total: ${bold(
             trooper.points.toString(),
@@ -218,7 +220,7 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
           break
         default:
         case 'teamwork': {
-          messageContent = `\n Squad ${bold('INFINEX 13')} joins your postion, CEX was ${bold(
+          messageContent = `\n Squad ${bold('Mezo G6')} joins your postion, Fiat hive was ${bold(
             'DESTROYED',
           )}!\n You earned ${bold(pointsChange + ' points')}, Hurray! \nNew total: ${bold(
             trooper.points.toString(),
@@ -230,18 +232,18 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
     }
   } else {
     // If user dies, handle defeat based on their current territory
-    if (trooper.currentTerritory !== 'Testnet') {
+    if (trooper.currentTerritory !== 'Satoshi’s Camp') {
       trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
       trooper.points = 0 // Reset points to 0
       messageContent = `You have been ${bold(
         'DEFEATED',
-      )} and lost all your points. 💀💀💀 \nTrustless recovery ship deployed, falling back to the ${bold(
+      )} and lost all your points. 💀💀💀 \nBitcoinFi recovery ship deployed, falling back to the ${bold(
         trooper.currentTerritory,
       )} territory.`
       gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
     } else {
-      trooper.points = 0 // Lose all points in Testnet as well
-      //Different message when you die in the Testnet realm
+      trooper.points = 0 // Lose all points in Satoshi’s Camp as well
+      //Different message when you die in the Satoshi’s Camp realm
       messageContent = ` You were ${bold('DEFEATED')} and lost all your points! 💀💀💀`
       gifUrl = 'https://media1.tenor.com/m/iWJOxKk1s84AAAAd/bug-attack-starship-troopers.gif'
 
@@ -281,13 +283,13 @@ async function handleSpecialOutcome(
 ) {
   const outcomes: Record<string, Outcome> = {
     Stick: {
-      message: `A stick? where's your ${bold('Infinex')} IN1-Assault Rifle trooper? you ${bold('DIED')}. 💀💀💀`,
+      message: `A stick? where's your ${bold('Mezo')} BitcoinFi-Assault Rifle trooper? you ${bold('DIED')}. 💀💀💀`,
       gifUrl: 'https://media1.tenor.com/m/pvgQeEnepkQAAAAd/killer-bugs-starship-troopers.gif', // Replace with actual URL
     },
     Snacking: {
       message: `Eating soldier? ${bold(
-        'Infinex',
-      )} troopers run on adrenline & trustless recoverable weaponry only. CEX bugs ambush you, you ${bold(
+        'Mezo',
+      )} troopers run on adrenline & decentralized weaponry only. Fiat bugs ambush you, you ${bold(
         'DIED',
       )}. 💀💀💀`,
       gifUrl: 'https://media1.tenor.com/m/e-Ngztd2-lYAAAAC/starship-troopers-burn.gif',
@@ -302,18 +304,18 @@ async function handleSpecialOutcome(
   const outcome = outcomes[userChoice]
 
   trooper.points = 0
-  if (trooper.currentTerritory !== 'Testnet') {
+  if (trooper.currentTerritory !== 'Satoshi’s Camp') {
     trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
     cooldowns.set(userId, Date.now() + 1000) // 4-hour cooldown
   } else {
-    cooldowns.set(userId, Date.now() + 1000) // 4-hour cooldown in Testnet as well
+    cooldowns.set(userId, Date.now() + 1000) // 4-hour cooldown in Satoshi’s Camp as well
   }
 
   await insertOrUpdatePlayer(trooper) // Update player data
 
   // embed with special outcome message and GIF
   const specialOutcomeEmbed = new EmbedBuilder()
-    .setTitle("You're the worst Infinex Trooper ever!") //
+    .setTitle("You're the worst Mezo Trooper ever!") //
     .setDescription(outcome.message)
     .setImage(outcome.gifUrl)
 
@@ -330,7 +332,7 @@ async function handleLeaderboardCommand(interaction: CommandInteraction) {
       // Top 10 players
       try {
         const user = await interaction.client.users.fetch(player.userId) // Fetch user object
-        leaderboardMessage += `${index + 1}. Infinex Trooper <@${player.userId}> - Points: ${player.points}\n`
+        leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points}\n`
       } catch {
         // If there's an issue fetching the user (e.g., user not found), fallback to showing the ID
         leaderboardMessage += `${index + 1}. User ID: ${player.userId} - Points: ${player.points}\n`
@@ -377,11 +379,11 @@ async function updateLeaderboardMessage(client: Client) {
       // Try to fetch the existing leaderboard message
       const message = await textChannel.messages.fetch(MESSAGE_ID)
       // If found, edit the existing message
-      await message.edit(`**Infinex Trooper - Leaderboard**\n${leaderboardString}`)
+      await message.edit(`**Mezo Trooper - Leaderboard**\n${leaderboardString}`)
     } catch (error) {
       // If the message is not found or another error occurs, send a new message
       console.log('Existing leaderboard message not found. Sending a new message.')
-      await textChannel.send(`**Infinex Trooper - Leaderboard**\n${leaderboardString}`)
+      await textChannel.send(`**Mezo Trooper - Leaderboard**\n${leaderboardString}`)
     }
   } else {
     console.log('Leaderboard channel is not text-based or could not be found.')
@@ -396,7 +398,7 @@ async function handleWormholeCommand(interaction: CommandInteraction) {
   const trooper: Trooper = (await getTrooper(userId)) || {
     userId,
     points: 0,
-    currentTerritory: 'Testnet',
+    currentTerritory: 'Satoshi’s Camp',
   } // Assuming getTrooper returns a trooper object
 
   const updateSuccessful = await updatePlayerTerritory(userId, trooper.points, newTerritory)
@@ -418,13 +420,13 @@ async function handleWormholeCommand(interaction: CommandInteraction) {
 
 // ################################################# Update Territory #################################################
 async function updatePlayerTerritory(userId: string, currentPoints: number, newTerritory: string) {
-  //Gas fees to switch territories:
+  // Gas fees to switch territories:
   const gasFees: { [key: string]: number } = {
-    Testnet: 0,
-    Base: 1000,
-    Optimism: 10000,
-    Ethereum: 100000,
-  }
+    "Satoshi's Camp": 0,
+    "Yield Farming Base": 1000,
+    "NetworkNode": 5000,
+    "Mainframe": 10000,
+  };
   const fee = gasFees[newTerritory] // Now TypeScript knows newTerritory is a valid key
   console.log(newTerritory)
   console.log(gasFees)
@@ -450,7 +452,7 @@ async function handlePointsCommand(interaction: CommandInteraction) {
     return
   }
   // Construct the message with the player's details
-  const replyMessage = `**Your Infinex Trooper:**\n- Points: ${trooper.points}\n- Current Territory: ${trooper.currentTerritory}`
+  const replyMessage = `**Your Mezo Trooper:**\n- Points: ${trooper.points}\n- Current Territory: ${trooper.currentTerritory}`
   await interaction.editReply(replyMessage)
 }
 
@@ -484,25 +486,25 @@ function randomBoostedItem() {
 
 // Logic to determine the fallback territory if a user "dies"
 function getFallbackTerritory(currentTerritory: string): string {
-  const territoryOrder = ['Testnet', 'Base', 'Optimism', 'Ethereum']
+  const territoryOrder = ['Satoshi’s Camp', 'Yield Farming Base', 'Lending Command', 'Experimental Frontier']
   const currentIndex = territoryOrder.indexOf(currentTerritory)
-  return currentIndex > 0 ? territoryOrder[currentIndex - 1] : 'Testnet'
+  return currentIndex > 0 ? territoryOrder[currentIndex - 1] : 'Satoshi’s Camp'
 }
 
 // Calculates the success change with the choosen powerLevel
 function getSuccessChance(powerLevel: number, territory: string): number {
   let successChance: number
   switch (territory) {
-    case 'Testnet':
+    case 'Satoshi’s Camp':
       successChance = powerLevel === 100 ? 0.5 : powerLevel === 10 ? 0.75 : 0.95
       break
-    case 'Base':
+    case 'Yield Farming Base':
       successChance = powerLevel === 100 ? 0.45 : powerLevel === 10 ? 0.7 : 0.9
       break
-    case 'Optimism':
+    case 'Lending Command':
       successChance = powerLevel === 100 ? 0.4 : powerLevel === 10 ? 0.65 : 0.85
       break
-    case 'Ethereum':
+    case 'Experimental Frontier':
       successChance = powerLevel === 100 ? 0.3 : powerLevel === 10 ? 0.5 : 0.8
       break
     default:
@@ -512,22 +514,37 @@ function getSuccessChance(powerLevel: number, territory: string): number {
 }
 
 function calculatePoints(powerLevel: number, territory: string): number {
-  let points: number
+  let basePoints: number;
+
+  // Set base points based on territory
   switch (territory) {
-    case 'Testnet':
-      points = powerLevel === 100 ? 500 : powerLevel === 10 ? 200 : 100
-      break
-    case 'Base':
-      points = powerLevel === 100 ? 1000 : powerLevel === 10 ? 400 : 200
-      break
-    case 'Optimism':
-      points = powerLevel === 100 ? 2000 : powerLevel === 10 ? 800 : 400
-      break
-    case 'Ethereum':
-      points = powerLevel === 100 ? 4000 : powerLevel === 10 ? 1500 : 800
-      break
+    case 'Satoshi’s Camp':
+      basePoints = 100;
+      break;
+    case 'Yield Farming Base':
+      basePoints = 300;
+      break;
+    case 'Lending Command':
+      basePoints = 600;
+      break;
+    case 'Experimental Frontier':
+      basePoints = 1200;
+      break;
     default:
-      points = 100
+      basePoints = 100; // Default for unlisted territories
   }
-  return points
+
+  // Scale points based on power level
+  switch (powerLevel) {
+    case 1:
+      return basePoints; // 1x
+    case 5:
+      return basePoints * 2; // 5x (200% of base points)
+    case 10:
+      return basePoints * 4; // 10x (400% of base points)
+    case 100:
+      return basePoints * 10; // Maximum level (1000% of base points)
+    default:
+      return basePoints; // Default to base if unknown level
+  }
 }
