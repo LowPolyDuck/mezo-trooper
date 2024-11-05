@@ -397,32 +397,35 @@ async function updateLeaderboardMessage(client: Client) {
     return
   }
 
-  const leaderboardString = leaderboard
-    .map(
-      (entry, index) =>
-        `#${index + 1}. ${userMention(entry.userId)}: ${entry.points} points, current territory: ${
-          entry.currentTerritory
-        }`,
-    )
-    .join('\n')
+  const leaderboardStrings = await Promise.all(
+    leaderboard.map(async (entry, index) => {
+      // Fetch mats balance for each user
+      const userBalance = await pointsManager.getBalance(entry.userId);
+      
+      // Format leaderboard entry with points, territory, and mats balance
+      return `#${index + 1}. ${userMention(entry.userId)}: ${entry.points} points, current territory: ${entry.currentTerritory}, mats: ${userBalance} 🪙`;
+    })
+  );
 
-  const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID)
+  const leaderboardMessage = leaderboardStrings.join('\n');
+
+  const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID);
 
   if (channel?.isTextBased()) {
-    const textChannel = channel as TextChannel
+    const textChannel = channel as TextChannel;
 
     try {
       // Try to fetch the existing leaderboard message
-      const message = await textChannel.messages.fetch(MESSAGE_ID)
+      const message = await textChannel.messages.fetch(MESSAGE_ID);
       // If found, edit the existing message
-      await message.edit(`**Mezo Trooper - Leaderboard**\n${leaderboardString}`)
+      await message.edit(`**Mezo Trooper - Leaderboard**\n${leaderboardMessage}`);
     } catch (error) {
       // If the message is not found or another error occurs, send a new message
-      console.log('Existing leaderboard message not found. Sending a new message.')
-      await textChannel.send(`**Mezo Trooper - Leaderboard**\n${leaderboardString}`)
+      console.log('Existing leaderboard message not found. Sending a new message.');
+      await textChannel.send(`**Mezo Trooper - Leaderboard**\n${leaderboardMessage}`);
     }
   } else {
-    console.log('Leaderboard channel is not text-based or could not be found.')
+    console.log('Leaderboard channel is not text-based or could not be found.');
   }
 }
 
