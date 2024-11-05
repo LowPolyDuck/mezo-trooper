@@ -35,3 +35,6 @@ export const MONGO_COLLECTION = validateEnvVar(
   process.env.MONGO_COLLECTION,
   "MONGO_COLLECTION"
 );
+
+export const DRIP_API_KEY = validateEnvVar(process.env.DRIP_API_KEY, "DRIP_API_KEY");
+export const DRIP_REALM_ID = validateEnvVar(process.env.DRIP_REALM_ID, "MONGO_DB");

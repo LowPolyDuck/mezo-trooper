@@ -19,6 +19,8 @@ import {
   // updatePlayerTerritory,
 } from './provider/mongodb'
 import { Trooper, Outcome } from './types/index'
+import { transferMats } from './dripApi/dripApi'; // Adding DripApi functionality
+import { pointsManager } from './dripApi/pointsManager';  // Adding DripApi functionality from example
 
 const discordClient = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
@@ -195,6 +197,12 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
       'successful',
     )}, you earned ${bold(pointsChange + ' points')}.\nNew total: ${bold(trooper.points.toString())} points.`
 
+    // Transfer mats based on the pointsChange
+    const matsToTransfer = Math.floor(pointsChange * 0.1); // Example calculation 10% of points earned the player receives in mats 
+    await pointsManager.addPoints(interaction.user.id, matsToTransfer);
+
+    messageContent += `\nYou also earned ${matsToTransfer} mats!`;
+
     if (isBoosted) {
       const boosts = ['airdrop', 'teamwork', 'grenade']
       const randomIndex = Math.floor(Math.random() * boosts.length)
@@ -322,35 +330,63 @@ async function handleSpecialOutcome(
   await interaction.followUp({ embeds: [specialOutcomeEmbed] })
 }
 
-// ################################################# Leaderboard command #################################################
+// ################################################# Leaderboard command Mats #################################################
 async function handleLeaderboardCommand(interaction: CommandInteraction) {
   try {
-    await interaction.deferReply()
-    const rankedPlayers = await updateAndFetchRanks()
-    let leaderboardMessage = 'Leaderboard:\n'
+    await interaction.deferReply();
+    const rankedPlayers = await updateAndFetchRanks();
+    let leaderboardMessage = 'Leaderboard:\n';
     for (const [index, player] of rankedPlayers.slice(0, 10).entries()) {
-      // Top 10 players
       try {
-        const user = await interaction.client.users.fetch(player.userId) // Fetch user object
-        leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points}\n`
-      } catch {
-        // If there's an issue fetching the user (e.g., user not found), fallback to showing the ID
-        leaderboardMessage += `${index + 1}. User ID: ${player.userId} - Points: ${player.points}\n`
+        const userBalance = await pointsManager.getBalance(player.userId);
+        leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points} - Mats: ${userBalance} mats\n`;
+      } catch (error) {
+        leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points}\n`;
       }
     }
-    // Use editReply because we used deferReply initially (deferReply to give time to process command)
-    await interaction.editReply(leaderboardMessage)
+    await interaction.editReply(leaderboardMessage);
   } catch (error) {
-    console.error('Error handling leaderboard command:', error)
-    //Error Handling
+    console.error('Error handling leaderboard command:', error);
     await interaction
       .followUp({
         content: 'There was an error processing the leaderboard command.',
         ephemeral: true,
       })
-      .catch(console.error)
+      .catch(console.error);
   }
 }
+
+
+
+// ################################################# Leaderboard command old #################################################
+// async function handleLeaderboardCommand(interaction: CommandInteraction) {
+//   try {
+//     await interaction.deferReply()
+//     const rankedPlayers = await updateAndFetchRanks()
+//     let leaderboardMessage = 'Leaderboard:\n'
+//     for (const [index, player] of rankedPlayers.slice(0, 10).entries()) {
+//       // Top 10 players
+//       try {
+//         const user = await interaction.client.users.fetch(player.userId) // Fetch user object
+//         leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points}\n`
+//       } catch {
+//         // If there's an issue fetching the user (e.g., user not found), fallback to showing the ID
+//         leaderboardMessage += `${index + 1}. User ID: ${player.userId} - Points: ${player.points}\n`
+//       }
+//     }
+//     // Use editReply because we used deferReply initially (deferReply to give time to process command)
+//     await interaction.editReply(leaderboardMessage)
+//   } catch (error) {
+//     console.error('Error handling leaderboard command:', error)
+//     //Error Handling
+//     await interaction
+//       .followUp({
+//         content: 'There was an error processing the leaderboard command.',
+//         ephemeral: true,
+//       })
+//       .catch(console.error)
+//   }
+// }
 
 // ################################################# Leaderboard Channel Update Logic #################################################
 async function updateLeaderboardMessage(client: Client) {
@@ -467,18 +503,17 @@ function addMillisecondsToDate(inputDate: Date, millisecondsToAdd: number): Date
   return newDate
 }
 
-//Defeat function
+//Defeat function TODO: implement when ready!
 function handleDefeat(trooper: Trooper, userId: string) {
   // Reset points and set cooldown
   trooper.points = 0
-  cooldowns.set(userId, Date.now() + 1000) // 4 hours cooldown
+  cooldowns.set(userId, Date.now() + 1000) // 4 hours cooldown <- changing cooldown TODO: what would be a good timeframe?
 
   // Downgrade territory if applicable
   trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
 }
 
 function randomBoostedItem() {
-  // Assuming weaponOptions and defenseOptions are defined arrays
   const allOptions = [...weaponOptions, ...defenceOptions] // Include "Snacking" if it's a defense option
   const randomIndex = Math.floor(Math.random() * allOptions.length)
   return allOptions[randomIndex]
