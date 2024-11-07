@@ -19,7 +19,6 @@ import {
   // updatePlayerTerritory,
 } from './provider/mongodb'
 import { Trooper, Outcome } from './types/index'
-import { transferMats } from './dripApi/dripApi'; // Adding DripApi functionality
 import { pointsManager } from './dripApi/pointsManager';  // Adding DripApi functionality from example
 
 const discordClient = new Client({
@@ -28,6 +27,12 @@ const discordClient = new Client({
 })
 
 const cooldowns: Map<string, number> = new Map()
+
+// Constants for mats awards
+const MATS_AWARDS = [1000, 500, 200];
+let roundEndTime: Date = getNextRoundEndTime();
+const pastLeaderboards: Array<{ date: string, leaderboard: string }> = [];
+
 
 // All Weapon options to choose from
 const weaponOptions = ['Blaster', 'Cannon', 'Fist', 'Stick']
@@ -48,8 +53,13 @@ export async function Run(): Promise<void> {
     console.log('Running Bot')
 
     discordClient.once('ready', () => {
-      console.log(`Logged in as ${discordClient.user?.tag}`)
-    })
+      console.log(`Logged in as ${discordClient.user?.tag}`);
+    
+      // Schedule leaderboard updates every minute to dynamically update time
+      setInterval(async () => {
+        await updateLeaderboardMessage(discordClient);
+      }, 60 * 1000); // Update every 1 minute
+    });
 
     discordClient.on('debug', (info) => {
       console.log('Info', info)
@@ -197,11 +207,11 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
       'successful',
     )}, you earned ${bold(pointsChange + ' points')}.\nNew total: ${bold(trooper.points.toString())} points.`
 
-    // Transfer mats based on the pointsChange
-    const matsToTransfer = Math.floor(pointsChange * 0.1); // Example calculation 10% of points earned the player receives in mats 
-    await pointsManager.addPoints(interaction.user.id, matsToTransfer);
+    // Transfer mats based on the pointsChange (Example usage of mats distribution for commands)
+    // const matsToTransfer = Math.floor(pointsChange * 0.1); // Example calculation 10% of points earned the player receives in mats 
+    // await pointsManager.addPoints(interaction.user.id, matsToTransfer);
 
-    messageContent += `\nYou also earned ${matsToTransfer} mats!`;
+    // messageContent += `\nYou also earned ${matsToTransfer} mats!`;
 
     if (isBoosted) {
       const boosts = ['airdrop', 'teamwork', 'grenade']
@@ -270,7 +280,7 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
   await insertOrUpdatePlayer(trooper)
 
   // Construct and send the reply
-  const commandNameCapitalized = interaction.commandName.charAt(0).toUpperCase() + interaction.commandName.slice(1)
+  // const commandNameCapitalized = interaction.commandName.charAt(0).toUpperCase() + interaction.commandName.slice(1)
   const embed = new EmbedBuilder().setDescription(messageContent)
 
   // Conditionally add an image if the URL is not empty
@@ -335,11 +345,17 @@ async function handleLeaderboardCommand(interaction: CommandInteraction) {
   try {
     await interaction.deferReply();
     const rankedPlayers = await updateAndFetchRanks();
-    let leaderboardMessage = 'Leaderboard:\n';
+    const roundEndTimestamp = Math.floor(roundEndTime.getTime() / 1000); // Unix timestamp for countdown
+    let leaderboardMessage = `Leaderboard:\nTime until next round: <t:${roundEndTimestamp}:R>\n`;
     for (const [index, player] of rankedPlayers.slice(0, 10).entries()) {
       try {
         const userBalance = await pointsManager.getBalance(player.userId);
-        leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points} - Mats: ${userBalance} mats\n`;
+        leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points}  \n`;
+        
+        // Add mats awards for top 3 players
+        if (index < MATS_AWARDS.length) {
+          leaderboardMessage += `    🏆 Reward: ${MATS_AWARDS[index]} mats if position holds 🏆\n`;
+        }
       } catch (error) {
         leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points}\n`;
       }
@@ -355,6 +371,7 @@ async function handleLeaderboardCommand(interaction: CommandInteraction) {
       .catch(console.error);
   }
 }
+
 
 
 
@@ -391,24 +408,30 @@ async function handleLeaderboardCommand(interaction: CommandInteraction) {
 // ################################################# Leaderboard Channel Update Logic #################################################
 async function updateLeaderboardMessage(client: Client) {
   const leaderboard = await getLeaderBoard()
+  const roundEndTimestamp = Math.floor(roundEndTime.getTime() / 1000); // Unix timestamp for countdown
 
   if (!leaderboard) {
     console.log('No leaderboard data available.')
     return
   }
 
+  // const timeRemainingString = getTimeRemainingString();
   const leaderboardStrings = await Promise.all(
     leaderboard.map(async (entry, index) => {
-      // Fetch mats balance for each user
-      const userBalance = await pointsManager.getBalance(entry.userId);
+      // const userBalance = await pointsManager.getBalance(entry.userId); // In case you want to show mats here uncomment this
+      let leaderboardEntry = `#${index + 1}. ${userMention(entry.userId)}: ${entry.points} points, current territory: ${entry.currentTerritory} `;
       
-      // Format leaderboard entry with points, territory, and mats balance
-      return `#${index + 1}. ${userMention(entry.userId)}: ${entry.points} points, current territory: ${entry.currentTerritory}, mats: ${userBalance} 🪙`;
+      // Add mats awards for top 3 players
+      if (index < MATS_AWARDS.length) {
+        leaderboardEntry += `    🏆 Reward: ${MATS_AWARDS[index]} mats if position holds 🏆`;
+      }
+      
+      return leaderboardEntry;
     })
   );
 
-  const leaderboardMessage = leaderboardStrings.join('\n');
-
+  const leaderboardMessage = `**Mezo Trooper - Leaderboard**\nTime until next round: <t:${roundEndTimestamp}:R>\n${leaderboardStrings.join('\n')}`;
+ 
   const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID);
 
   if (channel?.isTextBased()) {
@@ -418,11 +441,11 @@ async function updateLeaderboardMessage(client: Client) {
       // Try to fetch the existing leaderboard message
       const message = await textChannel.messages.fetch(MESSAGE_ID);
       // If found, edit the existing message
-      await message.edit(`**Mezo Trooper - Leaderboard**\n${leaderboardMessage}`);
+      await message.edit(`\n${leaderboardMessage}`);
     } catch (error) {
       // If the message is not found or another error occurs, send a new message
       console.log('Existing leaderboard message not found. Sending a new message.');
-      await textChannel.send(`**Mezo Trooper - Leaderboard**\n${leaderboardMessage}`);
+      await textChannel.send(`\n${leaderboardMessage}`);
     }
   } else {
     console.log('Leaderboard channel is not text-based or could not be found.');
@@ -483,17 +506,20 @@ async function updatePlayerTerritory(userId: string, currentPoints: number, newT
 
 // ################################################# Points Command Logic #################################################
 async function handlePointsCommand(interaction: CommandInteraction) {
-  await interaction.deferReply()
-  const userId = interaction.user.id
-  const trooper = await getTrooper(userId)
+  await interaction.deferReply();
+  const userId = interaction.user.id;
+  const trooper = await getTrooper(userId);
+  const timeRemainingString = getTimeRemainingString();
+
   if (!trooper) {
-    await interaction.editReply("It seems you haven't started your journey yet!")
-    return
+    await interaction.editReply("It seems you haven't started your journey yet!");
+    return;
   }
-  // Construct the message with the player's details
-  const replyMessage = `**Your Mezo Trooper:**\n- Points: ${trooper.points}\n- Current Territory: ${trooper.currentTerritory}`
-  await interaction.editReply(replyMessage)
+
+  const replyMessage = `**Your Mezo Trooper:**\n- Points: ${trooper.points}\n- Current Territory: ${trooper.currentTerritory}\n- Time until next round: ${timeRemainingString}`;
+  await interaction.editReply(replyMessage);
 }
+
 
 Run()
 
@@ -584,5 +610,46 @@ function calculatePoints(powerLevel: number, territory: string): number {
       return basePoints * 10; // Maximum level (1000% of base points)
     default:
       return basePoints; // Default to base if unknown level
+  }
+}
+
+function getNextRoundEndTime(): Date {
+  const now = new Date();
+  now.setUTCHours(0, 0, 0, 0);
+  now.setUTCDate(now.getUTCDate() + 1); // Next UTC midnight
+  return now;
+}
+
+// Schedule game reset every 24 hours at midnight UTC
+setInterval(async () => {
+  await endRound();
+  roundEndTime = getNextRoundEndTime(); // Reset round timer
+}, 24 * 60 * 60 * 1000); // 24 hours in milliseconds
+
+
+// Helper function to calculate time remaining as a string
+function getTimeRemainingString(): string {
+  const now = new Date();
+  const timeRemaining = Math.max(roundEndTime.getTime() - now.getTime(), 0);
+  const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+  const minutes = Math.floor((timeRemaining % (1000 * 60 * 60)) / (1000 * 60));
+  return `${hours} hours, ${minutes} minutes`;
+}
+
+async function endRound() {
+  // Placeholder function to handle end of round operations
+  console.log('Round ended, awarding mats...');
+  const leaderboard = await getLeaderBoard();
+  if (leaderboard.length > 0) {
+    const topPlayers = leaderboard.slice(0, 3);
+    for (const [index, player] of topPlayers.entries()) {
+      await pointsManager.addPoints(player.userId, MATS_AWARDS[index]);
+    }
+    // Store past leaderboard
+    pastLeaderboards.unshift({
+      date: new Date().toISOString(),
+      leaderboard: leaderboard.map((entry, index) => `#${index + 1} ${userMention(entry.userId)} - ${entry.points} points`).join('\n')
+    });
+    if (pastLeaderboards.length > 3) pastLeaderboards.pop(); // Keep only last 3 days
   }
 }
