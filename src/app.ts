@@ -8,6 +8,12 @@ import {
   bold,
   time,
   TextChannel,
+  ButtonBuilder, 
+  ButtonStyle, 
+  ActionRowBuilder, 
+  ButtonInteraction,
+  StringSelectMenuBuilder, 
+  StringSelectMenuInteraction
 } from 'discord.js'
 import { SetUpDiscord } from './discord'
 import { TOKEN, BOT_CHANNEL_ID, LEADERBOARD_CHANNEL_ID, MESSAGE_ID } from './config/config'
@@ -74,17 +80,16 @@ export async function Run(): Promise<void> {
     })
 
     discordClient.on('interactionCreate', async (interaction) => {
-      if (!interaction.isCommand() || !interaction.guildId) return
+      if (interaction.isCommand() && interaction.guildId) {
+        const { commandName } = interaction
 
-      const { commandName } = interaction
+        if (interaction.channelId !== BOT_CHANNEL_ID) return;
 
-      if (interaction.channelId !== BOT_CHANNEL_ID) {
-        // If the interaction does not come from the specified BOT_CHANNEL_ID it will be ignored
-        return
-      }
 
-      // UPDATE Switch/case for all the commands
       switch (commandName) {
+        case 'mezo_trooper':
+            await handleMezoTrooperCommand(interaction);
+            break;
         case 'help':
           await interaction.reply({
             content: `
@@ -118,31 +123,75 @@ export async function Run(): Promise<void> {
           \n- Keep an eye on the leaderboard to see how you stack up against other players.
           \n- Join the battle, protect the blockchain, and may the best Trooper win!`,
             ephemeral: true,
-          })
-          break
-        case 'attack':
-        case 'defend':
-          await handleCombatCommand(interaction, commandName)
-          break
+          });
+          break;
+          
+        // case 'attack':
+        // case 'defend':
+        //   await handleCombatCommand(interaction, commandName)
+        //   break
         case 'leaderboard':
           await handleLeaderboardCommand(interaction)
-          break
+          break;
         case 'points':
           await handlePointsCommand(interaction)
-          break
-        case 'wormhole':
-          await handleWormholeCommand(interaction)
-          break
+          break;
+        // case 'wormhole':
+        //   await handleWormholeCommand(interaction)
+        //   break
         default:
           await interaction.reply({
             content: 'Unknown command. Use `/help` to see all commands.',
             ephemeral: true,
-          })
-          break
+          });
+          break;
       }
       // Update the leaderboard in the leaderboard channel
       await updateLeaderboardMessage(discordClient)
-    })
+    }
+  
+      // Button interaction handler
+      if (interaction.isButton()) {
+        switch (interaction.customId) {
+          case 'attack':
+            await handleAttackOptions(interaction);
+            break;
+          case 'defend':
+            await handleDefendOptions(interaction);
+            break;
+          case 'wormhole':
+            await handleWormholeOptions(interaction);
+            break;
+          case 'blaster':
+          case 'cannon':
+          case 'fist':
+          case 'stick':
+            // await handleCombatCommand(interaction, 'attack', interaction.customId, 1);
+            // break;
+            // Store the selected weapon and move to power level selection
+            await handlePowerLevelOptions(interaction, interaction.customId);
+            break;
+          case 'build_wall':
+          case 'set_trap':
+          case 'supply_run':
+          case 'snacking':
+            
+            // Store the selected weapon and move to power level selection
+            await handlePowerLevelOptions(interaction, interaction.customId);
+            break;
+          // Add similar cases for wormhole destinations if needed
+        }
+      } else if (interaction.isStringSelectMenu()) {
+        if (interaction.customId === 'power_level_select') {
+          // Call handlePowerLevelSelection with the selected power level and stored weapon choice
+          const selectedPowerLevel = parseInt(interaction.values[0]);
+          const userChoice = interaction.message.content.split(' ')[2]; // Retrieve weapon from message content
+          await handlePowerLevelSelection(interaction, userChoice, selectedPowerLevel);
+        }
+      }
+    });
+
+    
 
     await SetUpDiscord(discordClient, TOKEN)
     console.log(`Bot status: ${discordClient.user?.presence?.status}`)
@@ -151,8 +200,154 @@ export async function Run(): Promise<void> {
   }
 }
 
+
+// ################################################# Mezo Trooper Command #################################################
+async function handleMezoTrooperCommand(interaction: CommandInteraction) {
+  const attackButton = new ButtonBuilder()
+    .setCustomId('attack')
+    .setLabel('Attack')
+    .setEmoji('🔫') // Pistol emoji
+    .setStyle(ButtonStyle.Primary);
+
+  const defendButton = new ButtonBuilder()
+    .setCustomId('defend')
+    .setLabel('Defend')
+    .setEmoji('🛡️') // Shield emoji
+    .setStyle(ButtonStyle.Success);
+
+  const wormholeButton = new ButtonBuilder()
+    .setCustomId('wormhole')
+    .setLabel('Wormhole')
+    .setStyle(ButtonStyle.Secondary);
+
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    attackButton,
+    defendButton,
+    wormholeButton
+  );
+
+  await interaction.reply({
+    content: 'Soilder stalling is not allowed, what are you going to do?!:',
+    components: [actionRow],
+  });
+}
+
+// ################################################# Attack/Defense Options #################################################
+async function handleAttackOptions(interaction: ButtonInteraction) {
+  const blasterButton = new ButtonBuilder()
+    .setCustomId('blaster')
+    .setLabel('Bitcoin Blaster')
+    .setEmoji('💥') 
+    .setStyle(ButtonStyle.Primary);
+
+  const cannonButton = new ButtonBuilder()
+    .setCustomId('cannon')
+    .setLabel('Decentralizer Cannon')
+    .setEmoji('💣') 
+    .setStyle(ButtonStyle.Primary);
+
+  const fistButton = new ButtonBuilder()
+    .setCustomId('fist')
+    .setLabel('Freedom Fist')
+    .setEmoji('👊')
+    .setStyle(ButtonStyle.Primary);
+
+  const stickButton = new ButtonBuilder()
+    .setCustomId('stick')
+    .setLabel('Stick')
+    .setEmoji('🦯')
+    .setStyle(ButtonStyle.Primary);
+
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    blasterButton,
+    cannonButton,
+    fistButton,
+    stickButton
+  );
+
+  await interaction.update({
+    content: 'Choose your weapon:',
+    components: [actionRow],
+  });
+}
+
+async function handleDefendOptions(interaction: ButtonInteraction) {
+  const buildWallButton = new ButtonBuilder()
+    .setCustomId('build_wall')
+    .setLabel('Build Wall')
+    .setEmoji('🧱')
+    .setStyle(ButtonStyle.Primary);
+
+  const setTrapButton = new ButtonBuilder()
+    .setCustomId('set_trap')
+    .setLabel('Set Trap')
+    .setEmoji('🪤')
+    .setStyle(ButtonStyle.Primary);
+
+  const supplyRunButton = new ButtonBuilder()
+    .setCustomId('supply_run')
+    .setLabel('Supply Run')
+    .setEmoji('🏃🏻‍♂️')
+    .setStyle(ButtonStyle.Primary);
+
+  const snackingButton = new ButtonBuilder()
+    .setCustomId('snacking')
+    .setLabel('Snacking')
+    .setEmoji('🍿')
+    .setStyle(ButtonStyle.Primary);
+
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    buildWallButton,
+    setTrapButton,
+    supplyRunButton,
+    snackingButton
+  );
+
+  await interaction.update({
+    content: 'Choose your defense option:',
+    components: [actionRow],
+  });
+}
+
+// ################################################# Power Level Options #################################################
+async function handlePowerLevelOptions(interaction: ButtonInteraction, userChoice: string) {
+  const powerLevelSelect = new StringSelectMenuBuilder()
+    .setCustomId('power_level_select')
+    .setPlaceholder('Choose Power Level')
+    .addOptions([
+      { label: '1x', value: '1' },
+      { label: '5x', value: '5' },
+      { label: '10x', value: '10' },
+      { label: '100x', value: '100' },
+    ]);
+
+  const actionRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(powerLevelSelect);
+
+  // Store the userChoice in the content message so it can be retrieved later
+  await interaction.update({
+    content: `You chose ${userChoice}. Now, select your power level:`,
+    components: [actionRow],
+  });
+}
+
+// ################################################# Handle Power Level Selection #################################################
+async function handlePowerLevelSelection(
+  interaction: StringSelectMenuInteraction,
+  userChoice: string,
+  selectedPowerLevel: number
+) {
+  // Call handleCombatCommand to execute the main combat logic
+  await handleCombatCommand(interaction, 'attack', userChoice, selectedPowerLevel);
+}
+
 // ################################################# Attack/Defense Logic #################################################
-async function handleCombatCommand(interaction: CommandInteraction, commandName: string) {
+async function handleCombatCommand(
+  interaction: CommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
+  commandName: string,
+  userChoice: string,
+  powerLevel: number
+) {
+
   // Immediately defer the reply to buy time for processing ## Good to know
   await interaction.deferReply()
   const userId = interaction.user.id
@@ -176,13 +371,14 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
     points: 0,
     currentTerritory: 'Satoshi’s Camp',
   }
-  const powerLevel = (interaction.options.get('power-level')?.value as number) || 1
-  const userChoice = (interaction.options.get('choose_action')?.value as string) || 'Blaster'
-  console.log(userChoice)
+  // const powerLevel = (interaction.options.get('power-level')?.value as number) || 1
+  // const userChoice = (interaction.options.get('choose_action')?.value as string) || 'Blaster'
+  // console.log(userChoice)
+  // const powerLevel = 1 
   // Special outcomes for "Stick" or "Snacking"
-  if (userChoice === 'Stick' || userChoice === 'Snacking') {
-    await handleSpecialOutcome(interaction, userChoice, trooper, userId)
-    return // Exit the function early for special cases
+  if (interaction.isButton() && (userChoice === 'Stick' || userChoice === 'Snacking')) {
+    await handleSpecialOutcome(interaction, userChoice, trooper, userId);
+    return; // Exit the function early for special cases
   }
 
   // Determine if the selected weapon is boosted
@@ -294,10 +490,10 @@ async function handleCombatCommand(interaction: CommandInteraction, commandName:
 
 // ################################################# Special Outcome Logic #################################################
 async function handleSpecialOutcome(
-  interaction: CommandInteraction,
+  interaction: ButtonInteraction, // Accept both types
   userChoice: string,
   trooper: Trooper,
-  userId: string,
+  userId: string
 ) {
   const outcomes: Record<string, Outcome> = {
     Stick: {
@@ -450,6 +646,24 @@ async function updateLeaderboardMessage(client: Client) {
   } else {
     console.log('Leaderboard channel is not text-based or could not be found.');
   }
+}
+
+// ################################################# Wormhole Options #################################################
+async function handleWormholeOptions(interaction: ButtonInteraction) {
+  const options = ['Satoshi’s Camp', 'Yield Farming Base', 'Lending Command', 'Experimental Frontier'];
+  const buttons = options.map((option, index) =>
+    new ButtonBuilder()
+      .setCustomId(option.toLowerCase().replace(/ /g, '_'))
+      .setLabel(option)
+      .setStyle(ButtonStyle.Primary)
+  );
+
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
+
+  await interaction.update({
+    content: 'Choose your wormhole destination:',
+    components: [actionRow],
+  });
 }
 
 // ################################################# Wormhole Logic #################################################
