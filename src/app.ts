@@ -152,6 +152,16 @@ export async function Run(): Promise<void> {
   
       // Button interaction handler
       if (interaction.isButton()) {
+        if (interaction.isButton()) {
+          const { customId } = interaction;
+          
+          // Check if the interaction is a wormhole option button
+          if (customId.startsWith('wormhole_')) {
+            const destination = customId.replace('wormhole_', '').replace(/_/g, ' ');
+            await handleWormholeCommand(interaction, destination);
+            return;
+          }
+      
         switch (interaction.customId) {
           case 'attack':
             await handleAttackOptions(interaction);
@@ -162,6 +172,22 @@ export async function Run(): Promise<void> {
           case 'wormhole':
             await handleWormholeOptions(interaction);
             break;
+          case 'how_to_play': // Add this case for handling the "How to Play" button
+            await handleHowToPlay(interaction);
+            break;
+          case 'points': // New case for Points button
+            await handlePoints(interaction);
+            break;
+          case 'help': // New case for Help button
+            await handleHelp(interaction);
+            break;
+            case 'go_back':
+        await goBackToMainMenu(interaction); // Handle "Go Back" button
+        break;
+        case 'continue':
+        await handleMezoTrooperCommand(interaction); // Restart from main menu after combat
+        break;
+
           case 'blaster':
           case 'cannon':
           case 'fist':
@@ -181,6 +207,7 @@ export async function Run(): Promise<void> {
             break;
           // Add similar cases for wormhole destinations if needed
         }
+      }
       } else if (interaction.isStringSelectMenu()) {
         if (interaction.customId === 'power_level_select') {
           // Call handlePowerLevelSelection with the selected power level and stored weapon choice
@@ -200,14 +227,35 @@ export async function Run(): Promise<void> {
   }
 }
 
+// ################################################# Go Back to Main Menu #################################################
+async function goBackToMainMenu(interaction: ButtonInteraction) {
+  await handleMezoTrooperCommand(interaction);
+}
 
 // ################################################# Mezo Trooper Command #################################################
-async function handleMezoTrooperCommand(interaction: CommandInteraction) {
+async function handleMezoTrooperCommand(interaction: CommandInteraction | ButtonInteraction) {
+  // Welcome Embed with image and description
+  const welcomeEmbed = new EmbedBuilder()
+    .setTitle('Welcome to Mezo Troopers!')
+    .setDescription(
+      "The battle for decentralization begins!\n" + 
+      "Choose your actions wisely to protect the Mezo ecosystem."
+    )
+    .setThumbnail('https://styles.redditmedia.com/t5_2u091/styles/communityIcon_ry3hant7cfq61.jpg?format=pjpg&s=8e91bf21dd61485a8544614621364c320f952602') // Replace with actual image URL
+    .setColor(0x00AE86)
+
+  // Button for How to Play
+  const howToPlayButton = new ButtonBuilder()
+    .setCustomId('how_to_play')
+    .setLabel('_______How to Play_______')
+    .setStyle(ButtonStyle.Primary);
+
+  // Row with Attack and Defend buttons
   const attackButton = new ButtonBuilder()
     .setCustomId('attack')
     .setLabel('Attack')
     .setEmoji('🔫') // Pistol emoji
-    .setStyle(ButtonStyle.Primary);
+    .setStyle(ButtonStyle.Danger);
 
   const defendButton = new ButtonBuilder()
     .setCustomId('defend')
@@ -215,22 +263,39 @@ async function handleMezoTrooperCommand(interaction: CommandInteraction) {
     .setEmoji('🛡️') // Shield emoji
     .setStyle(ButtonStyle.Success);
 
+  const attackDefendRow = new ActionRowBuilder<ButtonBuilder>().addComponents(attackButton, defendButton);
+
+  // Wormhole button row
   const wormholeButton = new ButtonBuilder()
     .setCustomId('wormhole')
-    .setLabel('Wormhole')
+    .setLabel('_____🪐Wormhole🪐_____')
     .setStyle(ButtonStyle.Secondary);
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    attackButton,
-    defendButton,
-    wormholeButton
-  );
+  const wormholeRow = new ActionRowBuilder<ButtonBuilder>().addComponents(wormholeButton);
 
+  // Row with Help and Points buttons
+  const helpButton = new ButtonBuilder()
+    .setCustomId('help')
+    .setLabel('Help')
+    .setEmoji('📍')
+    .setStyle(ButtonStyle.Primary);
+
+  const pointsButton = new ButtonBuilder()
+    .setCustomId('points')
+    .setLabel('MyPoints')
+    .setEmoji('🪙')
+    .setStyle(ButtonStyle.Primary);
+
+  const helpPointsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(helpButton, pointsButton);
+
+  // Send the embed with action rows
   await interaction.reply({
-    content: 'Soilder stalling is not allowed, what are you going to do?!:',
-    components: [actionRow],
+    embeds: [welcomeEmbed],
+    content: '',
+    components: [new ActionRowBuilder<ButtonBuilder>().addComponents(howToPlayButton), attackDefendRow, wormholeRow, helpPointsRow],
   });
 }
+
 
 // ################################################# Attack/Defense Options #################################################
 async function handleAttackOptions(interaction: ButtonInteraction) {
@@ -258,15 +323,24 @@ async function handleAttackOptions(interaction: ButtonInteraction) {
     .setEmoji('🦯')
     .setStyle(ButtonStyle.Primary);
 
+  const goBackButton = new ButtonBuilder()
+    .setCustomId('go_back')
+    .setLabel('Go Back')
+    .setStyle(ButtonStyle.Secondary);
+
+
+
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     blasterButton,
     cannonButton,
     fistButton,
-    stickButton
+    stickButton,
+    goBackButton
   );
 
   await interaction.update({
     content: 'Choose your weapon:',
+    embeds: [],
     components: [actionRow],
   });
 }
@@ -296,15 +370,24 @@ async function handleDefendOptions(interaction: ButtonInteraction) {
     .setEmoji('🍿')
     .setStyle(ButtonStyle.Primary);
 
+    const goBackButton = new ButtonBuilder()
+    .setCustomId('go_back')
+    .setLabel('Go Back')
+    .setStyle(ButtonStyle.Secondary);
+
+
+
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     buildWallButton,
     setTrapButton,
     supplyRunButton,
-    snackingButton
+    snackingButton,
+    goBackButton
   );
 
   await interaction.update({
     content: 'Choose your defense option:',
+    embeds: [],
     components: [actionRow],
   });
 }
@@ -326,6 +409,7 @@ async function handlePowerLevelOptions(interaction: ButtonInteraction, userChoic
   // Store the userChoice in the content message so it can be retrieved later
   await interaction.update({
     content: `You chose ${userChoice}. Now, select your power level:`,
+    embeds: [],
     components: [actionRow],
   });
 }
@@ -484,8 +568,15 @@ async function handleCombatCommand(
     console.log(gifUrl)
     embed.setImage(gifUrl)
   }
+// Add the "Continue" button for another round
+const continueButton = new ButtonBuilder()
+.setCustomId('continue')
+.setLabel('Continue')
+.setStyle(ButtonStyle.Primary);
 
-  await interaction.editReply({ embeds: [embed] })
+const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton);
+
+await interaction.editReply({ embeds: [embed], components: [actionRow] });
 }
 
 // ################################################# Special Outcome Logic #################################################
@@ -568,39 +659,6 @@ async function handleLeaderboardCommand(interaction: CommandInteraction) {
   }
 }
 
-
-
-
-// ################################################# Leaderboard command old #################################################
-// async function handleLeaderboardCommand(interaction: CommandInteraction) {
-//   try {
-//     await interaction.deferReply()
-//     const rankedPlayers = await updateAndFetchRanks()
-//     let leaderboardMessage = 'Leaderboard:\n'
-//     for (const [index, player] of rankedPlayers.slice(0, 10).entries()) {
-//       // Top 10 players
-//       try {
-//         const user = await interaction.client.users.fetch(player.userId) // Fetch user object
-//         leaderboardMessage += `${index + 1}. Mezo Trooper <@${player.userId}> - Points: ${player.points}\n`
-//       } catch {
-//         // If there's an issue fetching the user (e.g., user not found), fallback to showing the ID
-//         leaderboardMessage += `${index + 1}. User ID: ${player.userId} - Points: ${player.points}\n`
-//       }
-//     }
-//     // Use editReply because we used deferReply initially (deferReply to give time to process command)
-//     await interaction.editReply(leaderboardMessage)
-//   } catch (error) {
-//     console.error('Error handling leaderboard command:', error)
-//     //Error Handling
-//     await interaction
-//       .followUp({
-//         content: 'There was an error processing the leaderboard command.',
-//         ephemeral: true,
-//       })
-//       .catch(console.error)
-//   }
-// }
-
 // ################################################# Leaderboard Channel Update Logic #################################################
 async function updateLeaderboardMessage(client: Client) {
   const leaderboard = await getLeaderBoard()
@@ -650,11 +708,17 @@ async function updateLeaderboardMessage(client: Client) {
 
 // ################################################# Wormhole Options #################################################
 async function handleWormholeOptions(interaction: ButtonInteraction) {
-  const options = ['Satoshi’s Camp', 'Yield Farming Base', 'Lending Command', 'Experimental Frontier'];
-  const buttons = options.map((option, index) =>
+  const options = [
+    { label: 'Satoshi’s Camp', value: 'Satoshi’s Camp' },
+    { label: 'Yield Farming Base', value: 'Yield Farming Base' },
+    { label: 'Lending Command', value: 'Lending Command' },
+    { label: 'Experimental Frontier', value: 'Experimental Frontier' }
+  ];
+
+  const buttons = options.map((option) =>
     new ButtonBuilder()
-      .setCustomId(option.toLowerCase().replace(/ /g, '_'))
-      .setLabel(option)
+      .setCustomId(`wormhole_${option.value.toLowerCase().replace(/ /g, '_')}`)
+      .setLabel(option.label)
       .setStyle(ButtonStyle.Primary)
   );
 
@@ -662,37 +726,40 @@ async function handleWormholeOptions(interaction: ButtonInteraction) {
 
   await interaction.update({
     content: 'Choose your wormhole destination:',
+    embeds: [],
     components: [actionRow],
   });
 }
 
+
 // ################################################# Wormhole Logic #################################################
-async function handleWormholeCommand(interaction: CommandInteraction) {
-  await interaction.deferReply()
-  const userId = interaction.user.id
-  const newTerritory = interaction.options.get('destination')?.value as string
+async function handleWormholeCommand(interaction: ButtonInteraction, destination: string) {
+  await interaction.deferReply();
+  const userId = interaction.user.id;
+
   const trooper: Trooper = (await getTrooper(userId)) || {
     userId,
     points: 0,
     currentTerritory: 'Satoshi’s Camp',
-  } // Assuming getTrooper returns a trooper object
+  };
 
-  const updateSuccessful = await updatePlayerTerritory(userId, trooper.points, newTerritory)
+  const updateSuccessful = await updatePlayerTerritory(userId, trooper.points, destination);
 
   // Define a GIF URL to include in the reply
-  const wormholeGifUrl = 'https://media1.tenor.com/m/mny-6-XqV1kAAAAd/wormhole.gif' // Replace with your actual GIF URL
+  const wormholeGifUrl = 'https://media1.tenor.com/m/mny-6-XqV1kAAAAd/wormhole.gif';
 
   if (updateSuccessful) {
     const embed = new EmbedBuilder()
-      .setTitle(`Wormhole Travel to ${newTerritory}!`)
-      .setDescription(`You have successfully traveled to ${bold(newTerritory)}, gas fees deducted.`)
-      .setImage(wormholeGifUrl) // Include the GIF in the embed
+      .setTitle(`Wormhole Travel to ${destination}!`)
+      .setDescription(`You have successfully traveled to ${bold(destination)}, gas fees deducted.`)
+      .setImage(wormholeGifUrl);
 
-    await interaction.editReply({ embeds: [embed] })
+    await interaction.editReply({ embeds: [embed] });
   } else {
-    await interaction.editReply(`You do not have enough points to travel to ${bold(newTerritory)}.`)
+    await interaction.editReply(`You do not have enough points to travel to ${bold(destination)}.`);
   }
 }
+
 
 // ################################################# Update Territory #################################################
 async function updatePlayerTerritory(userId: string, currentPoints: number, newTerritory: string) {
@@ -731,6 +798,12 @@ async function handlePointsCommand(interaction: CommandInteraction) {
   }
 
   const replyMessage = `**Your Mezo Trooper:**\n- Points: ${trooper.points}\n- Current Territory: ${trooper.currentTerritory}\n- Time until next round: ${timeRemainingString}`;
+  const goBackButton = new ButtonBuilder()
+  .setCustomId('go_back')
+  .setLabel('Go Back')
+  .setStyle(ButtonStyle.Secondary);
+
+const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(goBackButton);
   await interaction.editReply(replyMessage);
 }
 
@@ -738,23 +811,68 @@ async function handlePointsCommand(interaction: CommandInteraction) {
 Run()
 
 // ################################################# Helper functions #################################################
+async function handleHelp(interaction: ButtonInteraction) {
+  const helpEmbed = new EmbedBuilder()
+    .setTitle('Mezo Troopers - Help')
+    .setDescription(`
+      **Commands:**
+        - **Attack**: Launch an attack against the Fiat bugs to earn points. Your success and the points you earn depend on your chosen power level and your current territory.
+        - **Defend**: Defend your current territory from incoming Fiat bugs. Like attacks, your success depends on your power level and territory.
+        - **Wormhole**: Travel to another territory for a fee in points.
+        - **MyPoints**: Check your current points, territory, and rank.
+        - **howtoplay**: View gameplay instructions and tips.
+    `)
+    .setColor(0x00AE86);
+  // Create the "Go Back" button
+  const goBackButton = new ButtonBuilder()
+    .setCustomId('go_back')
+    .setLabel('Go Back')
+    .setStyle(ButtonStyle.Secondary);
+
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(goBackButton);
+  await interaction.update({
+    embeds: [helpEmbed],
+    components: [actionRow], // Clears buttons if this is a standalone message
+  });
+}
+async function handlePoints(interaction: ButtonInteraction) {
+  const userId = interaction.user.id;
+  const trooper = await getTrooper(userId);
+
+  if (!trooper) {
+    await interaction.reply({ content: "It seems you haven't started your journey yet!", ephemeral: true });
+    return;
+  }
+
+  // Get user's profile picture URL
+  const avatarUrl = interaction.user.displayAvatarURL();
+
+  const pointsEmbed = new EmbedBuilder()
+    .setTitle('Your Mezo Trooper Points')
+    .setDescription(`
+      **Points:** ${trooper.points}
+      **Current Territory:** ${trooper.currentTerritory}
+    `)
+    .setThumbnail(avatarUrl) // Set the player's profile picture as the thumbnail
+    .setColor(0xFFD700);
+    const goBackButton = new ButtonBuilder()
+    .setCustomId('go_back')
+    .setLabel('Go Back')
+    .setStyle(ButtonStyle.Secondary);
+
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(goBackButton);
+  await interaction.update({
+    embeds: [pointsEmbed],
+    components: [actionRow], // Clears buttons if this is a standalone message
+  });
+}
 
 function addMillisecondsToDate(inputDate: Date, millisecondsToAdd: number): Date {
   const currentTimestamp = inputDate.getTime() // Get the current timestamp in milliseconds
   const newTimestamp = currentTimestamp + millisecondsToAdd // Add the desired milliseconds
   const newDate = new Date(newTimestamp) // Create a new Date object with the updated timestamp
   return newDate
-}
-
-//Defeat function TODO: implement when ready!
-function handleDefeat(trooper: Trooper, userId: string) {
-  // Reset points and set cooldown
-  trooper.points = 0
-  cooldowns.set(userId, Date.now() + 1000) // 4 hours cooldown <- changing cooldown TODO: what would be a good timeframe?
-
-  // Downgrade territory if applicable
-  trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
-}
+} 
 
 function randomBoostedItem() {
   const allOptions = [...weaponOptions, ...defenceOptions] // Include "Snacking" if it's a defense option
@@ -767,6 +885,45 @@ function getFallbackTerritory(currentTerritory: string): string {
   const territoryOrder = ['Satoshi’s Camp', 'Yield Farming Base', 'Lending Command', 'Experimental Frontier']
   const currentIndex = territoryOrder.indexOf(currentTerritory)
   return currentIndex > 0 ? territoryOrder[currentIndex - 1] : 'Satoshi’s Camp'
+}
+
+async function handleHowToPlay(interaction: ButtonInteraction) {
+  const howToPlayEmbed = new EmbedBuilder()
+    .setTitle('How to Play Mezo Troopers')
+    .setDescription(`
+      Welcome to the Mezo Troopers game! Here's a quick guide:
+
+      **Gameplay:**
+      - **Attack:** Engage the fiat bugs to earn points.
+      - **Defend:** Fortify your current territory.
+      - **Wormhole:** Travel to different territories.
+
+      **Territories:**
+      - **Satoshi’s Camp:** Moderate rewards, low risk.
+      - **Yield Farming Base:** Intermediate zone for higher rewards.
+      - **Lending Command:** High-risk zone with greater rewards.
+      - **Experimental Frontier:** Ultimate zone with maximum points, high risk.
+
+      **Pro Tips:**
+      - Start in lower-risk areas to understand the mechanics.
+      - Keep an eye on the leaderboard to track your rank!
+      
+      Good luck, trooper!
+    `)
+    .setColor(0x00AE86);
+
+  // Create the "Go Back" button
+  const goBackButton = new ButtonBuilder()
+    .setCustomId('go_back')
+    .setLabel('Go Back')
+    .setStyle(ButtonStyle.Secondary);
+
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(goBackButton);
+
+  await interaction.update({
+    embeds: [howToPlayEmbed],
+    components: [actionRow], 
+  });
 }
 
 // Calculates the success change with the choosen powerLevel
