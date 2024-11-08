@@ -1,43 +1,47 @@
-import { ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js'
+import { ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } from 'discord.js'
+import { getLabelByCustomId } from '../utilities'
+import { goBackButton } from './common/buttons'
 
 export async function handleAttackOptions(interaction: ButtonInteraction) {
-  const blasterButton = new ButtonBuilder()
-    .setCustomId('blaster')
-    .setLabel('Bitcoin Blaster')
-    .setEmoji('💥')
-    .setStyle(ButtonStyle.Primary)
+  const embed = new EmbedBuilder()
+    .setTitle(`Select your BitcoinFi Weapon:`)
+    .setDescription('Some weapons are more effective than others, choose wisely!')
+    .setColor(0x00ff00)
 
-  const cannonButton = new ButtonBuilder()
-    .setCustomId('cannon')
-    .setLabel('Decentralizer Cannon')
-    .setEmoji('💣')
-    .setStyle(ButtonStyle.Primary)
+  const stickButton = new ButtonBuilder()
+    .setCustomId('dagger')
+    .setLabel(getLabelByCustomId('dagger'))
+    .setEmoji('🦯')
+    .setStyle(ButtonStyle.Success)
 
   const fistButton = new ButtonBuilder()
     .setCustomId('fist')
-    .setLabel('Freedom Fist')
+    .setLabel(getLabelByCustomId('fist'))
     .setEmoji('👊')
-    .setStyle(ButtonStyle.Primary)
+    .setStyle(ButtonStyle.Success)
 
-  const stickButton = new ButtonBuilder()
-    .setCustomId('stick')
-    .setLabel('Stick')
-    .setEmoji('🦯')
-    .setStyle(ButtonStyle.Primary)
+  const blasterButton = new ButtonBuilder()
+    .setCustomId('blaster')
+    .setLabel(getLabelByCustomId('blaster'))
+    .setEmoji('💥')
+    .setStyle(ButtonStyle.Success)
 
-  const goBackButton = new ButtonBuilder().setCustomId('go_back').setLabel('Go Back').setStyle(ButtonStyle.Secondary)
+  const cannonButton = new ButtonBuilder()
+    .setCustomId('cannon')
+    .setLabel(getLabelByCustomId('cannon'))
+    .setEmoji('🔫')
+    .setStyle(ButtonStyle.Success)
 
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    stickButton,
+    fistButton,
     blasterButton,
     cannonButton,
-    fistButton,
-    stickButton,
-    goBackButton,
+    goBackButton(),
   )
 
   await interaction.update({
-    content: 'Choose your weapon:',
-    embeds: [],
+    embeds: [embed],
     components: [actionRow],
   })
 }

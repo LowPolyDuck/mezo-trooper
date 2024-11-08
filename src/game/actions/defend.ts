@@ -1,43 +1,46 @@
-import { ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js'
+import { ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } from 'discord.js'
+import { goBackButton } from './common/buttons'
 
 export async function handleDefendOptions(interaction: ButtonInteraction) {
+  const embed = new EmbedBuilder()
+    .setTitle(`Select a your Defi Defense:`)
+    .setDescription('Some defenses are more effective than others, choose wisely!')
+    .setColor(0xff494a)
+
   const buildWallButton = new ButtonBuilder()
     .setCustomId('build_wall')
-    .setLabel('Build Wall')
+    .setLabel('BTCFi Wall')
     .setEmoji('🧱')
-    .setStyle(ButtonStyle.Primary)
+    .setStyle(ButtonStyle.Danger)
 
   const setTrapButton = new ButtonBuilder()
     .setCustomId('set_trap')
-    .setLabel('Set Trap')
+    .setLabel('Mezo Trap')
     .setEmoji('🪤')
-    .setStyle(ButtonStyle.Primary)
+    .setStyle(ButtonStyle.Danger)
 
   const supplyRunButton = new ButtonBuilder()
     .setCustomId('supply_run')
-    .setLabel('Supply Run')
+    .setLabel('Drip Supplies')
     .setEmoji('🏃🏻‍♂️')
-    .setStyle(ButtonStyle.Primary)
+    .setStyle(ButtonStyle.Danger)
 
   const snackingButton = new ButtonBuilder()
     .setCustomId('snacking')
-    .setLabel('Snacking')
+    .setLabel('Mats Snack')
     .setEmoji('🍿')
-    .setStyle(ButtonStyle.Primary)
-
-  const goBackButton = new ButtonBuilder().setCustomId('go_back').setLabel('Go Back').setStyle(ButtonStyle.Secondary)
+    .setStyle(ButtonStyle.Danger)
 
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
     buildWallButton,
     setTrapButton,
     supplyRunButton,
     snackingButton,
-    goBackButton,
+    goBackButton(),
   )
 
   await interaction.update({
-    content: 'Choose your defense option:',
-    embeds: [],
+    embeds: [embed],
     components: [actionRow],
   })
 }
