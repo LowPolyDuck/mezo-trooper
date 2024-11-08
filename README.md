@@ -1,6 +1,9 @@
 # Mezo Troopers Game
 
+## Project Description
 **Mezo Troopers** is a high-stakes, *Starship Troopers*-inspired Discord game designed for the Mezo ecosystem. In Mezo Trooper, players are guardians of a decentralized Bitcoin economy, battling against “The Fiat Bugs”—entities that embody threats like inflationary fiat money, centralized banking, and restrictive financial controls. These “bugs” are infestations trying to undermine Mezo’s Bitcoin-powered economic layer, attacking by attempting to inject fiat instability, centralization, and surveillance tactics into the system.
+
+This gamified experience on Discord challenges players to protect Bitcoin's decentralized values and gain points at the end of each 24 hour round. This game leverages simple commands, dynamic interactions, and a progression-based territory system that mirrors increasing layers of complexity in Mezo’s decentralized Bitcoin ecosystem.
 
 ---
 
@@ -40,6 +43,50 @@ Players progress through increasingly challenging territories, with each step un
 ## How to Join
 
 Simply join the Discord server and use any of the commands to start playing. Progress through the territories, accumulate points, and see if you have what it takes to reach the top!
+
+---
+
+## Target Group
+
+Mezo Troopers is designed for a diverse audience:
+
+- **Crypto Enthusiasts and Holders** who want to engage with Mezo in a gamified manner and have a similar thrill of an "All Or Nothing" point system.
+- **Discord Users** seeking a new, high-stakes game that combines strategy, competition into the Mezo-Ecosystem.
+
+## What Sets Mezo Troopers Apart
+
+- **Unique Game Mechanics**: Inspired by *Starship Troopers*, the game turns Bitcoin protection into a fun battle against "fiat bugs,".
+- **Progression Through Risk and Reward**: The game’s territory-based progression adds layers of challenge, where higher territories offer greater rewards but higher risks.
+- **Strategic Decision-Making**: Random boosts and the ability to choose different power levels for attacks mean that players must constantly weigh risk versus reward.
+- **Community and Competition**: Leaderboards create a competitive environment where players vie for top spots, adding a layer of social engagement.
+- **Bitcoin-First Design**: Integrated with Mezo’s BitcoinFi ecosystem, the game reflects the importance of decentralization, making it a unique addition to the Bitcoin-first community.
+
+---
+
+## Next Steps & Milestones for the Upcoming Month
+
+- **Enhanced Gameplay Mechanics**: Adding more interactions, such as power-ups, team-based missions, and new enemy types or pfp features.
+- **Expanded Command Set**: Implementing additional commands for more diverse player actions and strategies.
+- **Integration with Mezo Points**: Introducing a reward system tied to Mezo’s point structure to provide additional incentives.
+- **Additional Territories and Challenges**: Adding new, dynamic territories to keep gameplay fresh and challenging.
+- **Marketing Push**: Engaging the community with events, leaderboards, and Mezo ecosystem rewards for top players.
+
+---
+
+## Requirements/Expectations from Mezo for Implementation
+
+To fully realize this game within the Mezo ecosystem, we request:
+
+- **Discord Bot Support**: Assistance with Discord API enhancements and ensuring game stability on the server.
+- **Community Engagement**: Collaboration with the Mezo community team for promotional support and community events or further development of the game.
+- **Feedback and Testing Support**: Feedback and testing sessions with the Mezo team to ensure the game meets community expectations.
+
+---
+
+## Team Information
+
+- **Developer**: *Mochabyte* and *Ethboi* - Primary developers responsible for bot programming, gameplay mechanics, and technical integrations.
+- **Documentation**: *Mochabyte* 
 
 ---
 
