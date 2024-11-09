@@ -13,6 +13,7 @@ import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { defenceOptions, quotes, weaponOptions } from '../constants'
 import { Trooper, Outcome } from '../../types'
 import { addMillisecondsToDate } from '../utilities'
+import { Territories } from '../constants'
 
 export async function handleCombatCommand(
   interaction: ButtonInteraction,
@@ -56,6 +57,10 @@ export async function handleCombatCommand(
 
   // Determine if the selected weapon is boosted
   const boosted = randomBoostedItem()
+  console.log('Available weapons:', weaponOptions);
+console.log('Available defenses:', defenceOptions);
+console.log('Randomly chosen boosted item:', boosted);
+console.log('User choice:', userChoice);
   console.log('boosted item:')
   console.log(boosted)
   const isBoosted = userChoice === boosted
@@ -63,8 +68,11 @@ export async function handleCombatCommand(
   // Adjusting success chance and points change based on the territory and power level
   const successChance = getSuccessChance(powerLevel, trooper.currentTerritory)
   const isSuccessful = Math.random() < successChance
-  let pointsChange = isSuccessful ? calculatePoints(powerLevel, trooper.currentTerritory) : 0
-
+console.log('Current Territory:', trooper.currentTerritory);
+console.log('Power Level:', powerLevel);
+console.log('Points before calculation:', trooper.points);
+let pointsChange = isSuccessful ? calculatePoints(powerLevel, trooper.currentTerritory) : 0;
+console.log('Points Change after calculation:', pointsChange);
   if (isBoosted) {
     pointsChange *= 5
   }
@@ -218,23 +226,23 @@ export async function handleSpecialOutcome(
 }
 
 function calculatePoints(powerLevel: number, territory: string): number {
-  let basePoints: number
+  let basePoints: number;
 
   switch (territory) {
-    case 'Satoshi’s Camp':
-      basePoints = 100
-      break
-    case 'Yield Farming Base':
-      basePoints = 300
-      break
-    case 'Lending Command':
-      basePoints = 600
-      break
-    case 'Experimental Frontier':
-      basePoints = 1200
-      break
+    case Territories.SATOSHIS_CAMP:
+      basePoints = 100;
+      break;
+    case Territories.YIELD_FARMING_BASE:
+      basePoints = 300;
+      break;
+    case Territories.LENDING_COMMAND:
+      basePoints = 600;
+      break;
+    case Territories.EXPERIMENTAL_FRONTIER:
+      basePoints = 1200;
+      break;
     default:
-      basePoints = 100
+      basePoints = 100;
   }
 
   switch (powerLevel) {
@@ -249,21 +257,26 @@ function calculatePoints(powerLevel: number, territory: string): number {
     default:
       return basePoints
   }
+  // Scaling points based on power level
+  return basePoints * (powerLevel / 1); // Multiplies by power level multiplier
+
+
+ 
 }
 
 function getSuccessChance(powerLevel: number, territory: string): number {
   let successChance: number
   switch (territory) {
-    case 'Satoshi’s Camp':
+    case Territories.SATOSHIS_CAMP:
       successChance = powerLevel === 100 ? 0.5 : powerLevel === 10 ? 0.75 : 0.95
       break
-    case 'Yield Farming Base':
+      case Territories.YIELD_FARMING_BASE:
       successChance = powerLevel === 100 ? 0.45 : powerLevel === 10 ? 0.7 : 0.9
       break
-    case 'Lending Command':
+      case Territories.LENDING_COMMAND:
       successChance = powerLevel === 100 ? 0.4 : powerLevel === 10 ? 0.65 : 0.85
       break
-    case 'Experimental Frontier':
+      case Territories.EXPERIMENTAL_FRONTIER:
       successChance = powerLevel === 100 ? 0.3 : powerLevel === 10 ? 0.5 : 0.8
       break
     default:
@@ -273,9 +286,9 @@ function getSuccessChance(powerLevel: number, territory: string): number {
 }
 
 function getFallbackTerritory(currentTerritory: string): string {
-  const territoryOrder = ['Satoshi’s Camp', 'Yield Farming Base', 'Lending Command', 'Experimental Frontier']
+  const territoryOrder = ['satoshi’s camp', 'yield farming base', 'lending command', 'experimental frontier']
   const currentIndex = territoryOrder.indexOf(currentTerritory)
-  return currentIndex > 0 ? territoryOrder[currentIndex - 1] : 'Satoshi’s Camp'
+  return currentIndex > 0 ? territoryOrder[currentIndex - 1] : 'satoshi’s camp'
 }
 
 function randomBoostedItem() {

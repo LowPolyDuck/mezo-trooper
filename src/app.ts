@@ -98,7 +98,7 @@ export async function Run(): Promise<void> {
             await handlePowerLevelOptions(interaction)
             break
           case '1':
-          case '4':
+          case '5':
           case '10':
           case '100':
             await handlePowerLevelSelection(interaction, cooldowns)

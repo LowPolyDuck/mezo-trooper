@@ -4,14 +4,24 @@ export async function handleHelp(interaction: ButtonInteraction) {
   const helpEmbed = new EmbedBuilder()
     .setTitle('Mezo Troopers - Help')
     .setDescription(
-      `
-        **Commands:**
-          - **Attack**: Launch an attack against the Fiat bugs to earn points. Your success and the points you earn depend on your chosen power level and your current territory.
-          - **Defend**: Defend your current territory from incoming Fiat bugs. Like attacks, your success depends on your power level and territory.
-          - **Wormhole**: Travel to another territory for a fee in points.
-          - **MyPoints**: Check your current points, territory, and rank.
-          - **howtoplay**: View gameplay instructions and tips.
-      `,
+`Welcome to the Mezo Troopers game! Here's a quick guide:\n\n` +
+  
+  `**Gameplay:**\n` +
+  `- **Attack:** Engage the fiat bugs to earn points.\n` +
+  `- **Defend:** Fortify your current territory.\n` +
+  `- **Wormhole:** Travel to different territories.\n\n` +
+
+  `**Territories:**\n` +
+  `- **Satoshi’s Camp:** Moderate rewards, low risk.\n` +
+  `- **Yield Farming Base:** Intermediate zone for higher rewards.\n` +
+  `- **Lending Command:** High-risk zone with greater rewards.\n` +
+  `- **Experimental Frontier:** Ultimate zone with maximum points, high risk.\n\n` +
+
+  `**Pro Tips:**\n` +
+  `- Start in lower-risk areas to understand the mechanics.\n` +
+  `- Keep an eye on the leaderboard to track your rank!\n\n` +
+  
+  `Good luck, trooper!`
     )
     .setColor(0x00ae86)
 

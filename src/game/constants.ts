@@ -1,5 +1,5 @@
-export const weaponOptions = ['Blaster', 'Cannon', 'Fist', 'Stick']
-export const defenceOptions = ['BuildWall', 'SetTrap', 'SupplyRun', 'Snacking']
+export const weaponOptions = ['dagger', 'blaster', 'fist', 'cannon']
+export const defenceOptions = ['build_wall', 'set_trap', 'supply_run', 'snacking']
 export const quotes = [
   "Everybody Fights, No One Quits. If You Don't Do Your Job, I'll Kill You Myself.",
   'Stay true to Bitcoin or become obsolete.',
@@ -17,3 +17,10 @@ export const weaponDictionary = {
   fist: 'Freedom Fist',
   stick: 'Stick',
 }
+
+export const Territories = {
+  SATOSHIS_CAMP: "satoshi’s camp",
+  YIELD_FARMING_BASE: "yield farming base",
+  LENDING_COMMAND: "lending command",
+  EXPERIMENTAL_FRONTIER: "experimental frontier"
+};

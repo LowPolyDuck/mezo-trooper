@@ -23,14 +23,20 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
     )
     .addFields(
       { name: 'Points', value: `✨ ${trooper.points}`, inline: true },
-      { name: 'Current Territory', value: `🪐 ${trooper.currentTerritory}`, inline: true },
+      { name: 'Current Territory', value: `🪐 ${(toTitleCase(trooper.currentTerritory))}`, inline: true },
       { name: 'Next Round In', value: `⌛ ${timeRemainingString}`, inline: false },
     )
     .setColor(0xff494a)
     .setThumbnail(avatarUrl)
 
   await interaction.update({
+    content: '', // Reset content to "Choose your action"
     embeds: [embed],
     components: [mainMenu()],
   })
+}
+
+// Helper function to convert string to title case
+function toTitleCase(str: string): string {
+  return str.replace(/\b\w/g, (char) => char.toUpperCase())
 }
