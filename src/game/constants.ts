@@ -10,3 +10,10 @@ export const quotes = [
   'The Only Good Fiat Bug Is A Dead Fiat Bug.',
 ]
 export const MATS_AWARDS = [1000, 500, 200]
+
+export const weaponDictionary = {
+  blaster: 'Bitcoin Blaster',
+  cannon: 'Mezo Cannon',
+  fist: 'Freedom Fist',
+  stick: 'Stick',
+}

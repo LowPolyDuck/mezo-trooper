@@ -15,14 +15,14 @@ import { Trooper, Outcome } from '../../types'
 import { addMillisecondsToDate } from '../utilities'
 
 export async function handleCombatCommand(
-  interaction: CommandInteraction | ButtonInteraction | StringSelectMenuInteraction,
+  interaction: ButtonInteraction,
   commandName: string,
   userChoice: string,
   powerLevel: number,
   cooldowns: Map<string, number> = new Map(),
 ) {
-  // Immediately defer the reply to buy time for processing ## Good to know
-  await interaction.deferReply()
+  // // Immediately defer the reply to buy time for processing
+  // await interaction.deferReply()
   const userId = interaction.user.id
 
   // Cooldown logic for all commands
@@ -161,11 +161,14 @@ export async function handleCombatCommand(
     embed.setImage(gifUrl)
   }
   // Add the "Continue" button for another round
-  const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Primary)
+  const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Success)
 
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)
 
-  await interaction.editReply({ embeds: [embed], components: [actionRow] })
+  await interaction.update({
+    embeds: [embed],
+    components: [actionRow],
+  })
 }
 
 export async function handleSpecialOutcome(

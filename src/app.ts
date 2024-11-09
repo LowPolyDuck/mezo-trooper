@@ -5,13 +5,12 @@ import { handleMezoTrooperCommand } from './game/commands/mezoTrooper'
 import { handleHelpCommand } from './game/commands/help'
 import { handleLeaderboardCommand } from './game/commands/leaderboard'
 import { endRound, getNextRoundEndTime, updateLeaderboardMessage } from './game/utilities'
-import { handlePointsCommand } from './game/commands/points'
 import { handlePowerLevelOptions, handlePowerLevelSelection } from './game/actions/power'
 import { handleAttackOptions } from './game/actions/attack'
 import { handleDefendOptions } from './game/actions/defend'
 import { handleHelp } from './game/actions/help'
 import { handleHowToPlay } from './game/actions/play'
-import { handlePoints } from './game/actions/points'
+import { handleMain } from './game/actions/main'
 import { handleWormholeCommand, handleWormholeOptions } from './game/actions/wormhole'
 
 const discordClient = new Client({
@@ -48,9 +47,6 @@ export async function Run(): Promise<void> {
           case 'leaderboard':
             await handleLeaderboardCommand(interaction)
             break
-          case 'points':
-            await handlePointsCommand(interaction, roundEndTime)
-            break
           default:
             await interaction.reply({
               content: 'Unknown command.',
@@ -83,32 +79,30 @@ export async function Run(): Promise<void> {
           case 'how_to_play':
             await handleHowToPlay(interaction)
             break
-          case 'points':
-            await handlePoints(interaction)
+          case 'main':
+          case 'go_back':
+          case 'continue':
+            await handleMain(interaction, roundEndTime)
             break
           case 'help':
             await handleHelp(interaction)
             break
-          case 'go_back':
-          case 'continue':
-            await handleMezoTrooperCommand(interaction)
-            break
           case 'blaster':
           case 'cannon':
           case 'fist':
-          case 'stick':
+          case 'dagger':
           case 'build_wall':
           case 'set_trap':
           case 'supply_run':
           case 'snacking':
-            await handlePowerLevelOptions(interaction, interaction.customId)
+            await handlePowerLevelOptions(interaction)
             break
-        }
-      }
-
-      if (interaction.isStringSelectMenu()) {
-        if (interaction.customId === 'power_level_select') {
-          await handlePowerLevelSelection(interaction, cooldowns)
+          case '1':
+          case '4':
+          case '10':
+          case '100':
+            await handlePowerLevelSelection(interaction, cooldowns)
+            break
         }
       }
     })

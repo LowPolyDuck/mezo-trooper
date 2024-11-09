@@ -1,6 +1,6 @@
 import { Client, TextChannel, userMention } from 'discord.js'
 import { getLeaderBoard } from '../provider/mongodb'
-import { MATS_AWARDS } from './constants'
+import { MATS_AWARDS, weaponDictionary } from './constants'
 import { LEADERBOARD_CHANNEL_ID, MESSAGE_ID } from '../config/config'
 import { pointsManager } from '../dripApi/pointsManager'
 
@@ -88,4 +88,21 @@ export function addMillisecondsToDate(inputDate: Date, millisecondsToAdd: number
   const newTimestamp = currentTimestamp + millisecondsToAdd
   const newDate = new Date(newTimestamp)
   return newDate
+}
+
+export type CustomId = 'blaster' | 'cannon' | 'fist' | 'dagger' | 'build_wall' | 'set_trap' | 'supply_run' | 'snacking'
+
+const labelDictionary: Record<CustomId, string> = {
+  blaster: 'Bitcoin Blaster',
+  cannon: 'Mezo Cannon',
+  fist: 'Defi Fist',
+  dagger: 'HODL Dagger',
+  build_wall: 'BTCFi Wall',
+  set_trap: 'Mezo Trap',
+  supply_run: 'Drip Supplies',
+  snacking: 'Mats Snack',
+}
+
+export function getLabelByCustomId(customId: CustomId): string {
+  return labelDictionary[customId] || 'Label not found'
 }
