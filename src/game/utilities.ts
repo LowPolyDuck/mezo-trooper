@@ -60,7 +60,7 @@ export async function updateLeaderboardMessage(client: Client) {
       const message = await textChannel.messages.fetch(MESSAGE_ID)
       await message.edit({ embeds: [leaderboardEmbed] })
     } catch (error) {
-      console.log('Specific leaderboard message not found. Updating the last message instead.')
+      console.log('Specific leaderboard message not found. Attempting to update the last message.')
 
       // Fetch the last message in the channel
       const messages = await textChannel.messages.fetch({ limit: 1 })
@@ -69,7 +69,8 @@ export async function updateLeaderboardMessage(client: Client) {
       if (lastMessage) {
         await lastMessage.edit({ embeds: [leaderboardEmbed] })
       } else {
-        console.log('No message available to edit in the channel.')
+        console.log('No existing message to edit. Sending a new leaderboard message.')
+        await textChannel.send({ embeds: [leaderboardEmbed] })
       }
     }
   } catch (error) {
