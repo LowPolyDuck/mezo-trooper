@@ -1,6 +1,7 @@
 import { ActionRowBuilder, bold, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder } from 'discord.js'
 import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { Trooper } from '../../types'
+import { continueButton, goBackButton } from './common/buttons'
 
 // Helper function to convert string to title case
 function toTitleCase(str: string): string {
@@ -22,30 +23,32 @@ export async function handleWormholeOptions(interaction: ButtonInteraction) {
       .setStyle(ButtonStyle.Primary),
   )
 
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons)
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons, goBackButton())
 
   const embed = new EmbedBuilder()
-  .setTitle(`Select your Destination:`)
-  .setDescription("Explore the territories in the Mezo Troopers universe. Each territory has unique challenges and rewards. Moving to higher territories costs points, so choose wisely!")
-  .setColor(0x00AE86)
-  .addFields(
-    {
-      name: "🌱 Satoshi's Camp",
-      value: "Cost: **0 points**",
-    },
-    {
-      name: "🌾 Yield Farming Base",
-      value: "Cost: **1,000 points**",
-    },
-    {
-      name: "🏦 Lending Command",
-      value: "Cost: **10,000 points**",
-    },
-    {
-      name: "🌌 Experimental Frontier",
-      value: "Cost: **20,000 points**",
-    }
-  );
+    .setTitle(`Select your Destination:`)
+    .setDescription(
+      'Explore the territories in the Mezo Troopers universe. Each territory has unique challenges and rewards. Moving to higher territories costs points, so choose wisely!',
+    )
+    .setColor(0x00ae86)
+    .addFields(
+      {
+        name: "🌱 Satoshi's Camp",
+        value: 'Cost: **0 points**',
+      },
+      {
+        name: '🌾 Yield Farming Base',
+        value: 'Cost: **1,000 points**',
+      },
+      {
+        name: '🏦 Lending Command',
+        value: 'Cost: **10,000 points**',
+      },
+      {
+        name: '🌌 Experimental Frontier',
+        value: 'Cost: **20,000 points**',
+      },
+    )
 
   await interaction.update({
     embeds: [embed],
@@ -63,27 +66,29 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
     currentTerritory: 'satoshi’s camp',
   }
 
-  // Check if the user is already in the selected territory
   if (trooper.currentTerritory === destination) {
+    const continueButton = new ButtonBuilder()
+      .setCustomId('continue')
+      .setLabel('Continue')
+      .setStyle(ButtonStyle.Success)
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)
+
+    await interaction.update({
+      components: [actionRow],
+    })
+
     await interaction.update({
       content: `You are already in ${bold(toTitleCase(destination))} territory!`,
-      components: [new ActionRowBuilder<ButtonBuilder>().addComponents(new ButtonBuilder().setCustomId('go_back').setLabel('Go Back').setStyle(ButtonStyle.Secondary))],
+      components: [actionRow],
     })
     return
   }
 
   const updateSuccessful = await updatePlayerTerritory(userId, trooper.points, destination)
 
-  // Define a GIF URL to include in the reply
   const wormholeGifUrl = 'https://media1.tenor.com/m/mny-6-XqV1kAAAAd/wormhole.gif'
-
-  // Create the "Go Back" button to return to the main menu
-  const goBackButton = new ButtonBuilder()
-    .setCustomId('go_back')
-    .setLabel('Go Back')
-    .setStyle(ButtonStyle.Secondary)
-
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(goBackButton)
+  const goBackButton = new ButtonBuilder().setCustomId('go_back').setLabel('Go Back').setStyle(ButtonStyle.Secondary)
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())
 
   if (updateSuccessful) {
     const embed = new EmbedBuilder()
@@ -91,11 +96,11 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
       .setDescription(`You have successfully traveled to ${bold(toTitleCase(destination))}, gas fees deducted.`)
       .setImage(wormholeGifUrl)
 
-      await interaction.update({
-        content: '', // Clear previous content
-        embeds: [embed],
-        components: [actionRow],
-      })
+    await interaction.update({
+      content: '', // Clear previous content
+      embeds: [embed],
+      components: [actionRow],
+    })
   } else {
     await interaction.update({
       content: `You do not have enough points to travel to ${bold(toTitleCase(destination))}.`,
@@ -106,10 +111,10 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
 
 async function updatePlayerTerritory(userId: string, currentPoints: number, newTerritory: string) {
   const gasFees: { [key: string]: number } = {
-    "satoshi’s camp": 0,
-    "yield farming base": 1000,
-    "lending command": 10000,
-    "experimental frontier": 20000,
+    'satoshi’s camp': 0,
+    'yield farming base': 1000,
+    'lending command': 10000,
+    'experimental frontier': 20000,
   }
 
   const fee = gasFees[newTerritory]

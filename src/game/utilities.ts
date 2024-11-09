@@ -1,4 +1,4 @@
-import { Client, TextChannel, userMention } from 'discord.js'
+import { Client, EmbedBuilder, TextChannel, userMention } from 'discord.js'
 import { getLeaderBoard } from '../provider/mongodb'
 import { MATS_AWARDS, weaponDictionary } from './constants'
 import { LEADERBOARD_CHANNEL_ID, MESSAGE_ID } from '../config/config'
@@ -12,46 +12,68 @@ export function getNextRoundEndTime(): Date {
 }
 
 export async function updateLeaderboardMessage(client: Client) {
-  const leaderboard = await getLeaderBoard()
-  const roundEndTime: Date = getNextRoundEndTime()
-  const roundEndTimestamp = Math.floor(roundEndTime.getTime() / 1000)
+  try {
+    const leaderboard = await getLeaderBoard()
+    const roundEndTime: Date = getNextRoundEndTime()
+    const roundEndTimestamp = Math.floor(roundEndTime.getTime() / 1000)
 
-  if (!leaderboard) {
-    console.log('No leaderboard data available.')
-    return
-  }
+    if (!leaderboard || leaderboard.length === 0) {
+      console.log('No leaderboard data available.')
+      return
+    }
 
-  const leaderboardStrings = await Promise.all(
-    leaderboard.map(async (entry, index) => {
-      let leaderboardEntry = `#${index + 1}. ${userMention(entry.userId)}: ${entry.points} points, current territory: ${
-        entry.currentTerritory
-      } `
-      if (index < MATS_AWARDS.length) {
-        leaderboardEntry += `    🏆 Reward: ${MATS_AWARDS[index]} mats if position holds 🏆`
-      }
+    // Create the leaderboard embed
+    const leaderboardEmbed = new EmbedBuilder()
+      .setTitle('🏆 Mezo Trooper - Leaderboard')
+      .setDescription(
+        `Earn daily mats by participating in Mezo Trooper! 🛡️\nTop 3 earn extra rewards and defend Mezo against the Fiat Bug Empire! 🐞\n\nTime until next round: <t:${roundEndTimestamp}:R>`,
+      )
+      .setColor(0xffd700) // Gold color for a trophy-like theme
 
-      return leaderboardEntry
-    }),
-  )
+    // Add leaderboard entries in rows of three fields
+    leaderboard.forEach((entry, index) => {
+      const rankAndUser = `#${index + 1}. ${userMention(entry.userId)}`
+      const points = `${entry.points} points`
+      const territory = entry.currentTerritory
 
-  const leaderboardMessage = `**Mezo Trooper - Leaderboard**\nTime until next round: <t:${roundEndTimestamp}:R>\n${leaderboardStrings.join(
-    '\n',
-  )}`
+      // Include award if available
+      const award = index < MATS_AWARDS.length ? ` 🏆 ${MATS_AWARDS[index]} mats 🏆` : ''
 
-  const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID)
+      leaderboardEmbed.addFields(
+        { name: 'Rank & User', value: `${rankAndUser}`, inline: true },
+        { name: 'Points', value: `${points}`, inline: true },
+        { name: 'Territory', value: `${territory}${award}`, inline: true },
+      )
+    })
 
-  if (channel?.isTextBased()) {
+    const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID)
+
+    if (!channel?.isTextBased()) {
+      console.log('Leaderboard channel is not text-based or could not be found.')
+      return
+    }
+
     const textChannel = channel as TextChannel
 
     try {
+      // Try to fetch the specific message by MESSAGE_ID
       const message = await textChannel.messages.fetch(MESSAGE_ID)
-      await message.edit(`\n${leaderboardMessage}`)
+      await message.edit({ embeds: [leaderboardEmbed] })
     } catch (error) {
-      console.log('Existing leaderboard message not found. Sending a new message.')
-      await textChannel.send(`\n${leaderboardMessage}`)
+      console.log('Specific leaderboard message not found. Updating the last message instead.')
+
+      // Fetch the last message in the channel
+      const messages = await textChannel.messages.fetch({ limit: 1 })
+      const lastMessage = messages.first()
+
+      if (lastMessage) {
+        await lastMessage.edit({ embeds: [leaderboardEmbed] })
+      } else {
+        console.log('No message available to edit in the channel.')
+      }
     }
-  } else {
-    console.log('Leaderboard channel is not text-based or could not be found.')
+  } catch (error) {
+    console.error('Failed to update leaderboard message:', error)
   }
 }
 

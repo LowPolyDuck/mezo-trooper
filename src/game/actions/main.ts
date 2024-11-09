@@ -18,12 +18,12 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
   const embed = new EmbedBuilder()
     .setTitle('🪖 Mezo Trooper Status')
     .setDescription(
-      'As a dedicated **Mezo Trooper**, you stand on the front lines, ready to defend the **Mezo ecosystem** from all threats.\n\n ' +
+      'As a dedicated **Mezo Trooper**, you stand on the front lines, ready to defend the **Mezo Ecosystem** from all threats.\n\n ' +
         'Stay vigilant, and push forward to conquer new territories and earn your place among the legendary defenders of Mezo.\n\n',
     )
     .addFields(
       { name: 'Points', value: `✨ ${trooper.points}`, inline: true },
-      { name: 'Current Territory', value: `🪐 ${(toTitleCase(trooper.currentTerritory))}`, inline: true },
+      { name: 'Current Territory', value: `🪐 ${toTitleCase(trooper.currentTerritory)}`, inline: true },
       { name: 'Next Round In', value: `⌛ ${timeRemainingString}`, inline: false },
     )
     .setColor(0xff494a)

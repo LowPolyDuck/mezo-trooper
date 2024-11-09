@@ -3,7 +3,7 @@ import { goBackButton } from './common/buttons'
 
 export async function handleDefendOptions(interaction: ButtonInteraction) {
   const embed = new EmbedBuilder()
-    .setTitle(`Select a your Defi Defense:`)
+    .setTitle(`Select your Mezo Defi Defense:`)
     .setDescription('Some defenses are more effective than others, choose wisely!')
     .setColor(0xff494a)
 
