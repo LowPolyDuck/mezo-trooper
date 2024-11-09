@@ -1,7 +1,8 @@
 # Mezo Troopers Game
 
 ## Project Description
-**Mezo Troopers** is a high-stakes, *Starship Troopers*-inspired Discord game designed for the Mezo ecosystem. In Mezo Trooper, players are guardians of a decentralized Bitcoin economy, battling against “The Fiat Bugs”—entities that embody threats like inflationary fiat money, centralized banking, and restrictive financial controls. These “bugs” are infestations trying to undermine Mezo’s Bitcoin-powered economic layer, attacking by attempting to inject fiat instability, centralization, and surveillance tactics into the system.
+
+**Mezo Troopers** is a high-stakes, _Starship Troopers_-inspired Discord game designed for the Mezo ecosystem. In Mezo Trooper, players are guardians of a decentralized Bitcoin economy, battling against “The Fiat Bugs”—entities that embody threats like inflationary fiat money, centralized banking, and restrictive financial controls. These “bugs” are infestations trying to undermine Mezo’s Bitcoin-powered economic layer, attacking by attempting to inject fiat instability, centralization, and surveillance tactics into the system.
 
 This gamified experience on Discord challenges players to protect Bitcoin's decentralized values and gain points at the end of each 24 hour round. This game leverages simple commands, dynamic interactions, and a progression-based territory system that mirrors increasing layers of complexity in Mezo’s decentralized Bitcoin ecosystem.
 
@@ -9,7 +10,7 @@ This gamified experience on Discord challenges players to protect Bitcoin's dece
 
 ## Gameplay Overview
 
-As *Mezo Troopers*, players' mission is to defend Bitcoin’s value and its decentralized nature. Using commands like /attack and /defend, players can face off against these symbolic “bugs” and earn points that represent their contributions to Bitcoin’s integrity. Higher levels or territories might include places like the Yield Frontier or the BitcoinFi Stronghold, representing layers of Bitcoin utility within Mezo’s economy, each with more substantial rewards and risks.
+As _Mezo Troopers_, players' mission is to defend Bitcoin’s value and its decentralized nature. Using commands like /attack and /defend, players can face off against these symbolic “bugs” and earn points that represent their contributions to Bitcoin’s integrity. Higher levels or territories might include places like the Yield Frontier or the BitcoinFi Stronghold, representing layers of Bitcoin utility within Mezo’s economy, each with more substantial rewards and risks.
 
 ### How to Play
 
@@ -18,7 +19,7 @@ Commands are simple but effective, helping players attack, defend, and navigate 
 - **/attack**: Launch an attack to earn points. Success depends on your territory and chosen power level.
 - **/defend**: Defend against CEX attacks, risking points but earning big if successful.
 - **/wormhole**: Move to a higher-risk territory for higher potential rewards by using points as gas fees.
-- **/leaderboard**: See the current top *Mezo Troopers*, their points, and territories.
+- **/leaderboard**: See the current top _Mezo Troopers_, their points, and territories.
 - **/points**: Displays your personal stats, including current points, rank, and territory.
 
 ### Territories
@@ -42,7 +43,7 @@ Players progress through increasingly challenging territories, with each step un
 
 ## How to Join
 
-Simply join the Discord server and use any of the commands to start playing. Progress through the territories, accumulate points, and see if you have what it takes to reach the top!
+Simply join the Discord server and use any of the commands to start playing. Progress through the territories, accumulate points, and see if you have what it takes to reach the top! :-:
 
 ---
 
@@ -55,7 +56,7 @@ Mezo Troopers is designed for a diverse audience:
 
 ## What Sets Mezo Troopers Apart
 
-- **Unique Game Mechanics**: Inspired by *Starship Troopers*, the game turns Bitcoin protection into a fun battle against "fiat bugs,".
+- **Unique Game Mechanics**: Inspired by _Starship Troopers_, the game turns Bitcoin protection into a fun battle against "fiat bugs,".
 - **Progression Through Risk and Reward**: The game’s territory-based progression adds layers of challenge, where higher territories offer greater rewards but higher risks.
 - **Strategic Decision-Making**: Random boosts and the ability to choose different power levels for attacks mean that players must constantly weigh risk versus reward.
 - **Community and Competition**: Leaderboards create a competitive environment where players vie for top spots, adding a layer of social engagement.
@@ -85,8 +86,8 @@ To fully realize this game within the Mezo ecosystem, we request:
 
 ## Team Information
 
-- **Developer**: *Mochabyte* and *Ethboi* - Primary developers responsible for bot programming, gameplay mechanics, and technical integrations.
-- **Documentation**: *Mochabyte* 
+- **Developer**: _Mochabyte_ and _Ethboi_ - Primary developers responsible for bot programming, gameplay mechanics, and technical integrations.
+- **Documentation**: _Mochabyte_
 
 ---
 
