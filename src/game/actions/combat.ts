@@ -132,15 +132,15 @@ export async function handleCombatCommand(
       messageContent = `You were ${bold('DEFEATED')} and lost all points! 💀💀💀\n${getQuote()}`
     }
 
-    await logPlayerDeath(
-      interaction.client as Client,
-      userId,
-      pointsBeforeReset,
-      trooper.currentTerritory,
-      itemUsed,
-      powerLevel,
-      avatarUrl,
-    )
+    // await logPlayerDeath(
+    //   interaction.client as Client,
+    //   userId,
+    //   pointsBeforeReset,
+    //   trooper.currentTerritory,
+    //   itemUsed,
+    //   powerLevel,
+    //   avatarUrl,
+    // )
     cooldowns.set(userId, Date.now() + 4 * 60 * 60 * 1000) // 4-hour cooldown
   }
 
