@@ -43,7 +43,7 @@ Players progress through increasingly challenging territories, with each step un
 
 ## How to Join
 
-Simply join the Discord server and use any of the commands to start playing. Progress through the territories, accumulate points, and see if you have what it takes to reach the top! :-:
+Simply join the Discord server and use any of the commands to start playing. Progress through the territories, accumulate points, and see if you have what it takes to reach the top!
 
 ---
 
