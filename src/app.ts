@@ -2,7 +2,6 @@ import { Client, GatewayIntentBits, Partials } from 'discord.js'
 import { SetUpDiscord } from './discord'
 import { TOKEN } from './config/config'
 import { handleMezoTrooperCommand } from './game/commands/mezoTrooper'
-import { handleLeaderboardCommand } from './game/commands/leaderboard'
 import { endRound, getNextRoundEndTime, updateLeaderboardMessage } from './game/utilities'
 import { handlePowerLevelOptions, handlePowerLevelSelection } from './game/actions/power'
 import { handleAttackOptions } from './game/actions/attack'
@@ -61,7 +60,7 @@ export async function Run(): Promise<void> {
             })
             break
         }
-        await updateLeaderboardMessage(discordClient)
+        //await updateLeaderboardMessage(discordClient)
       }
 
       if (interaction.isButton()) {
