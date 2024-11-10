@@ -53,9 +53,7 @@ export async function Run(): Promise<void> {
             await handleMezoTrooperCommand(interaction)
             break
           }
-          case 'leaderboard':
-            await handleLeaderboardCommand(interaction)
-            break
+
           default:
             await interaction.reply({
               content: 'Unknown command.',
