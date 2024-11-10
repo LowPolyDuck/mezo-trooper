@@ -3,7 +3,7 @@ import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { Trooper } from '../../types'
 import { continueButton, goBackButton } from './common/buttons'
 import { territories } from '../constants'
-import { toTitleCase } from '../utilities'
+import { toTitleCase, updateLeaderboardMessage } from '../utilities'
 
 export async function handleWormholeOptions(interaction: ButtonInteraction) {
   const options = [
@@ -66,7 +66,6 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
       .setTitle(`Wormhole Travel to ${bold(destination)}!`)
       .setDescription(`You have successfully traveled to ${bold(destination)}. Points fees deducted.`)
       .setImage(wormholeGifUrl)
-
     await interaction.update({
       embeds: [embed],
       components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],

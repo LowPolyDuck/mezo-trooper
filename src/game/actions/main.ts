@@ -1,12 +1,13 @@
-import { ButtonInteraction, EmbedBuilder } from 'discord.js'
+import { ButtonInteraction, Client, EmbedBuilder } from 'discord.js'
 import { getTrooper } from '../../provider/mongodb'
 import { mainMenu } from './common/buttons'
-import { getTimeRemainingString } from '../utilities'
+import { getTimeRemainingString, toTitleCase, updateLeaderboardMessage } from '../utilities'
 
-export async function handleMain(interaction: ButtonInteraction, roundEndTime: Date) {
+export async function handleMain(interaction: ButtonInteraction, roundEndTime: Date, discordClient: Client) {
   const userId = interaction.user.id
   const trooper = await getTrooper(userId)
   const timeRemainingString = getTimeRemainingString(roundEndTime)
+  await updateLeaderboardMessage(discordClient)
 
   if (!trooper) {
     await interaction.editReply("It seems you haven't started your journey yet!")
@@ -31,13 +32,8 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
     .setThumbnail(avatarUrl)
 
   await interaction.update({
-    content: '', // Reset content to "Choose your action"
+    content: '',
     embeds: [embed],
     components: [mainMenu()],
   })
-}
-
-// Helper function to convert string to title case
-function toTitleCase(str: string): string {
-  return str.replace(/\b\w/g, (char) => char.toUpperCase())
 }

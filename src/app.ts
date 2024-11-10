@@ -25,9 +25,6 @@ export async function Run(): Promise<void> {
   try {
     discordClient.once('ready', () => {
       console.log(`Logged in as ${discordClient.user?.tag}`)
-      setInterval(async () => {
-        await updateLeaderboardMessage(discordClient)
-      }, 60 * 1000)
     })
 
     HandleEvents(discordClient)
@@ -102,7 +99,7 @@ export async function Run(): Promise<void> {
           case 'main':
           case 'go_back':
           case 'continue':
-            await handleMain(interaction, roundEndTime)
+            await handleMain(interaction, roundEndTime, discordClient)
             break
           case 'help':
             await handleHelp(interaction)
