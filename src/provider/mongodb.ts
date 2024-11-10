@@ -11,6 +11,21 @@ import { Trooper } from "../types/index";
 const mongoUri = `mongodb+srv://${MONGO_USER}:${MONGO_SECRET}${MONGO_URL}`;
 
 
+export async function clearAllPoints() {
+  const client = new MongoClient(mongoUri);
+  
+  try {
+    await client.connect();
+    const collection = client.db(MONGO_DB).collection(MONGO_COLLECTION);
+    await collection.updateMany({}, { $set: { points: 0 } });
+    console.log('All player points have been reset to zero.');
+  } catch (error) {
+    console.error('Failed to reset player points:', error);
+  } finally {
+    await client.close(); 
+  }
+}
+
 export async function getLeaderBoard(): Promise<Trooper[]> {
   const client = new MongoClient(mongoUri);
   await client.connect();
@@ -35,6 +50,7 @@ export async function getTrooper(userId: string): Promise<Trooper | undefined> {
     userId: document.userId,
     points: document.points,
     currentTerritory: document.currentTerritory, // Include currentTerritory
+    matsEarnedInGame: document.matsEarnedInGame || 0,
   } as Trooper;
 }
 
@@ -49,6 +65,19 @@ export async function upsertTrooper(data: Trooper): Promise<void> {
   );
   console.log(`Trooper updated: ${data.userId}`);
   await client.close();
+}
+
+export async function incrementMatsInGame(userId: string, mats: number): Promise<void> {
+  const client = new MongoClient(mongoUri);
+  await client.connect();
+  const collection = client.db(MONGO_DB).collection(MONGO_COLLECTION);
+  await collection.updateOne(
+    { userId: userId },
+    { $inc: { matsEarnedInGame: mats } },
+    { upsert: true }
+  );
+  await client.close();
+  console.log(`Incremented ${mats} Mats for user ${userId} in the game.`);
 }
 
 // New function to update a trooper's current territory

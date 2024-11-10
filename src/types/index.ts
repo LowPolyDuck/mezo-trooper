@@ -2,6 +2,7 @@ export interface Trooper {
   userId: string
   points: number
   currentTerritory: string
+  matsEarnedInGame?: number; 
 }
 
 export type LeaderBoard = {

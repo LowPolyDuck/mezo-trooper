@@ -12,6 +12,7 @@ import { handleHelp } from './game/actions/help'
 import { handleHowToPlay } from './game/actions/play'
 import { handleMain } from './game/actions/main'
 import { handleWormholeCommand, handleWormholeOptions } from './game/actions/wormhole'
+import { activeGames } from './game/constants'
 
 const discordClient = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
@@ -35,12 +36,24 @@ export async function Run(): Promise<void> {
 
     discordClient.on('interactionCreate', async (interaction) => {
       if (interaction.isCommand() && interaction.guildId) {
-        const { commandName } = interaction
+        const { commandName, user, guildId } = interaction
 
         switch (commandName) {
-          case 'mezo_trooper':
-            await handleMezoTrooperCommand(interaction)
-            break
+          case 'mezo_trooper': {
+            const userGameKey = `${guildId}-${user.id}`; // Wrap in braces to fix lexical declaration issue
+    
+            if (activeGames.has(userGameKey)) {
+              await interaction.reply({
+                content: 'You already have an active game. Complete it before starting a new one!',
+                ephemeral: true,
+              });
+              return;
+            }
+    
+            activeGames.set(userGameKey, user.id);
+            await handleMezoTrooperCommand(interaction);
+            break;
+          }
           case 'help':
             await handleHelpCommand(interaction)
             break
@@ -117,7 +130,10 @@ Run()
 
 // Schedule game reset every 24 hours at midnight UTC
 setInterval(async () => {
-  await endRound(pastLeaderboards)
+  for (const [userGameKey, _] of activeGames.entries()) {
+    const [guildId, userId] = userGameKey.split('-')
+    await endRound(pastLeaderboards, guildId, userId)
+  }
   roundEndTime = getNextRoundEndTime()
 }, 24 * 60 * 60 * 1000)
 

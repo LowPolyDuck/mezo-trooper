@@ -1,19 +1,20 @@
-import { ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, time } from 'discord.js'
+import { Client, ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, time } from 'discord.js'
 import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { defenceOptions, quotes, weaponOptions } from '../constants'
 import { Trooper, Outcome } from '../../types'
-import { addMillisecondsToDate } from '../utilities'
+import { addMillisecondsToDate, logPlayerDeath } from '../utilities'
 import { Territories } from '../constants'
 
 export async function handleCombatCommand(
   interaction: ButtonInteraction,
-  commandName: string,
+  itemUsed: string,
   userChoice: string,
   powerLevel: number,
   cooldowns: Map<string, number> = new Map(),
 ) {
   // await interaction.deferReply()
   const userId = interaction.user.id
+  const avatarUrl = interaction.user.displayAvatarURL() 
 
   // Cooldown logic for all commands
   const lastCommandTime = cooldowns.get(userId) || 0
@@ -36,7 +37,7 @@ export async function handleCombatCommand(
   }
 
   if (interaction.isButton() && (userChoice === 'dagger' || userChoice === 'snacking')) {
-    await handleSpecialOutcome(interaction, userChoice, trooper, userId)
+    await handleSpecialOutcome(interaction, userChoice, trooper, userId, powerLevel, userChoice, avatarUrl)
     return
   }
 
@@ -142,6 +143,7 @@ export async function handleCombatCommand(
     color = 0xffffff
     if (trooper.currentTerritory !== 'Satoshi’s Camp') {
       trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
+      const pointsBeforeReset = trooper.points 
       trooper.points = 0
       messageContent = `You have been ${bold(
         'DEFEATED',
@@ -149,12 +151,34 @@ export async function handleCombatCommand(
         trooper.currentTerritory,
       )} territory.`
       gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
+            // Log the player's death in Satoshi’s Camp
+            await logPlayerDeath(
+              interaction.client as Client,
+              userId,
+              pointsBeforeReset,
+              trooper.currentTerritory,
+              itemUsed,
+              powerLevel,
+              avatarUrl
+            )
     } else {
+      const pointsBeforeReset = trooper.points 
       trooper.points = 0
       messageContent = `You were ${bold('DEFEATED')} and lost all your points! 💀💀💀`
       gifUrl = 'https://media1.tenor.com/m/iWJOxKk1s84AAAAd/bug-attack-starship-troopers.gif'
 
       messageContent += getQuote()
+            // Log the player's death in Satoshi’s Camp
+
+            await logPlayerDeath(
+              interaction.client as Client,
+              userId,
+              pointsBeforeReset,
+              trooper.currentTerritory,
+              itemUsed,
+              powerLevel,
+              avatarUrl
+            )
     }
 
     cooldowns.set(userId, Date.now() + 1000) // Apply 4-hour cooldown 4 * 60 * 60 * 1000
@@ -186,6 +210,9 @@ export async function handleSpecialOutcome(
   userChoice: string,
   trooper: Trooper,
   userId: string,
+  powerLevel: number,           // Added
+  itemUsed: string,           // Added
+  avatarUrl: string,             // Added
   cooldowns: Map<string, number> = new Map(),
 ) {
   const outcomes: Record<string, Outcome> = {
@@ -209,7 +236,18 @@ export async function handleSpecialOutcome(
   }
 
   const outcome = outcomes[userChoice]
+  const pointsBeforeReset = trooper.points  // Capture points before resetting
 
+
+  await logPlayerDeath(
+    interaction.client as Client,
+    userId,
+    pointsBeforeReset,
+    trooper.currentTerritory,
+    itemUsed,
+    powerLevel,
+    avatarUrl
+  )
   trooper.points = 0
   if (trooper.currentTerritory !== 'Satoshi’s Camp') {
     trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)

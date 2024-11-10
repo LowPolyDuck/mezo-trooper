@@ -66,7 +66,7 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
     currentTerritory: 'satoshi’s camp',
   }
 
-  if (trooper.currentTerritory === destination) {
+  if ((toTitleCase(trooper.currentTerritory)) === destination) {
     const continueButton = new ButtonBuilder()
       .setCustomId('continue')
       .setLabel('Continue')

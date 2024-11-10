@@ -24,6 +24,7 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
     .addFields(
       { name: 'Points', value: `✨ ${trooper.points}`, inline: true },
       { name: 'Current Territory', value: `🪐 ${toTitleCase(trooper.currentTerritory)}`, inline: true },
+      { name: 'Mats Earned', value: `🪙 ${trooper.matsEarnedInGame || 0}`, inline: true },
       { name: 'Next Round In', value: `⌛ ${timeRemainingString}`, inline: false },
     )
     .setColor(0xff494a)

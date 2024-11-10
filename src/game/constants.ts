@@ -24,3 +24,6 @@ export const Territories = {
   LENDING_COMMAND: "lending command",
   EXPERIMENTAL_FRONTIER: "experimental frontier"
 };
+
+// Store the active game user ID
+export const activeGames = new Map<string, string>(); // Maps guild ID to the user ID

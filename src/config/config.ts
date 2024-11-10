@@ -38,3 +38,5 @@ export const MONGO_COLLECTION = validateEnvVar(
 
 export const DRIP_API_KEY = validateEnvVar(process.env.DRIP_API_KEY, "DRIP_API_KEY");
 export const DRIP_REALM_ID = validateEnvVar(process.env.DRIP_REALM_ID, "MONGO_DB");
+
+export const DEATH_LOG_CHANNEL_ID = validateEnvVar(process.env.DEATH_LOG_CHANNEL_ID, "DEATH_LOG_CHANNEL_ID");

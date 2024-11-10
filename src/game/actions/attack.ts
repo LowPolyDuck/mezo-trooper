@@ -1,8 +1,22 @@
 import { ButtonInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder, EmbedBuilder } from 'discord.js'
 import { getLabelByCustomId } from '../utilities'
 import { goBackButton } from './common/buttons'
+import { activeGames } from '../constants';
 
 export async function handleAttackOptions(interaction: ButtonInteraction) {
+  const guildId = interaction.guildId;
+  const userId = interaction.user.id;
+  const userGameKey = `${guildId}-${userId}`;
+  const gameStarterId = (activeGames.get(userGameKey) || "") as string;
+
+  // Check if this user is the one who started the game
+  if (gameStarterId !== userId) {
+    await interaction.reply({
+      content: 'Only the user who started the game can interact with it.',
+      ephemeral: true,
+    });
+    return;
+  }
   const embed = new EmbedBuilder()
     .setTitle(`Select your BitcoinFi Weapon:`)
     .setDescription('Some weapons are more effective than others, choose wisely!')

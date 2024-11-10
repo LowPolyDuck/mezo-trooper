@@ -10,9 +10,23 @@ import {
 import { handleCombatCommand } from './combat'
 import { CustomId, getLabelByCustomId } from '../utilities'
 import { goBackButton } from './common/buttons'
+import { activeGames } from '../constants'
 
 export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
   const userChoice = interaction.customId // Save the user’s weapon choice
+  const guildId = interaction.guildId;
+  const userId = interaction.user.id;
+  const userGameKey = `${guildId}-${userId}`;
+  const gameStarterId = (activeGames.get(userGameKey) || "") as string;
+
+  // Check if this user is the one who started the game
+  if (gameStarterId !== userId) {
+    await interaction.reply({
+      content: 'Only the user who started the game can interact with it.',
+      ephemeral: true,
+    });
+    return;
+  }
 
   const embed = new EmbedBuilder()
     .setTitle(`Select your Power Level:`)
