@@ -119,7 +119,6 @@ export async function handleCombatCommand(
   } else {
     title = '💀 Mission failed!'
     color = 0xffffff
-    const pointsBeforeReset = trooper.points
     trooper.points = 0
     gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
 
@@ -146,7 +145,9 @@ export async function handleCombatCommand(
 
   await insertOrUpdatePlayer(trooper)
   const embed = new EmbedBuilder().setTitle(title).setDescription(messageContent).setColor(color)
-  if (gifUrl) embed.setImage(gifUrl)
+  if (gifUrl) {
+    embed.setImage(gifUrl)
+  }
 
   const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Success)
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)

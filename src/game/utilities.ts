@@ -48,18 +48,20 @@ export async function updateLeaderboardMessage(client: Client) {
       )
     })
 
+    console.log('fetcjing ' + LEADERBOARD_CHANNEL_ID)
     const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID)
 
     if (!channel?.isTextBased()) {
       console.log('Leaderboard channel is not text-based or could not be found.')
       return
     }
-
+    console.log('jee')
     const textChannel = channel as TextChannel
 
     try {
       // Try to fetch the specific message by MESSAGE_ID
       const message = await textChannel.messages.fetch(MESSAGE_ID)
+      console.log('messageid' + MESSAGE_ID)
       await message.edit({ embeds: [leaderboardEmbed] })
     } catch (error) {
       console.log('Specific leaderboard message not found. Attempting to update the last message.')
