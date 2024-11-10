@@ -29,8 +29,23 @@ export async function handleCombatCommand(
 
     if (timeLeft < 0) {
       const waitUntil = addMillisecondsToDate(new Date(now), timeLeft)
+      const timeRemaining = time(waitUntil, 'R') // Format remaining time
+
       console.log('User is on cooldown. Time left:', timeLeft)
-      await interaction.editReply(`You're on cooldown. Try again later. Wait ${time(waitUntil, 'R')}`)
+
+      const cooldownEmbed = new EmbedBuilder()
+        .setTitle('🛌 You’re on R&R!')
+        .setDescription(
+          `You've been put on rest and relaxation. You'll be back in action soon!\n\n**Cooldown Ends:** ${timeRemaining}`,
+        )
+        .setColor(0x3498db) // Cooldown color
+        .setImage('https://gifs.cackhanded.net/starship-troopers/kiss.gif') // Replace with your GIF URL
+
+      await interaction.update({
+        embeds: [cooldownEmbed],
+        components: [], // Remove any buttons or components
+      })
+
       return
     }
 
