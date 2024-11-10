@@ -38,17 +38,17 @@ export async function Run(): Promise<void> {
 
         switch (commandName) {
           case 'mezo_trooper': {
-            const userGameKey = `${guildId}-${user.id}`
+            // const userGameKey = `${guildId}-${user.id}`
 
-            if (activeGames.has(userGameKey)) {
-              await interaction.reply({
-                content: 'You already have an active game. Complete it before starting a new one!',
-                ephemeral: true,
-              })
-              return
-            }
+            // // if (activeGames.has(userGameKey)) {
+            // //   await interaction.reply({
+            // //     content: 'You already have an active game. Complete it before starting a new one!',
+            // //     ephemeral: true,
+            // //   })
+            // //   return
+            // // }
 
-            activeGames.set(userGameKey, user.id)
+            // activeGames.set(userGameKey, user.id)
             await handleMezoTrooperCommand(interaction)
             break
           }
@@ -67,18 +67,18 @@ export async function Run(): Promise<void> {
         const { customId } = interaction
 
         // Check if this user is the one who started
-        const userId = interaction.user.id
-        const guildId = interaction.guildId
-        const userGameKey = `${guildId}-${userId}`
-        const gameStarterId = (activeGames.get(userGameKey) || '') as string
+        // const userId = interaction.user.id
+        // const guildId = interaction.guildId
+        // const userGameKey = `${guildId}-${userId}`
+        // const gameStarterId = (activeGames.get(userGameKey) || '') as string
 
-        if (gameStarterId !== userId) {
-          await interaction.reply({
-            content: 'Only the user who started the game can interact with it.',
-            ephemeral: true,
-          })
-          return
-        }
+        // if (gameStarterId !== userId) {
+        //   await interaction.reply({
+        //     content: 'Only the user who started the game can interact with it.',
+        //     ephemeral: true,
+        //   })
+        //   return
+        // }
 
         if (customId.startsWith('wormhole_')) {
           const destination = customId.replace('wormhole_', '').replace(/_/g, ' ')
