@@ -40,17 +40,45 @@ export async function handlePowerLevelSelection(
   interaction: ButtonInteraction,
   cooldowns: Map<string, number> = new Map(),
 ) {
-  const selectedPowerLevel = parseInt(interaction.customId)
+  console.log('--- handlePowerLevelSelection START ---')
 
-  // Retrieve the userChoice from the embed field
-  const userChoiceField = interaction.message.embeds[0]?.fields.find((field) => field.name === 'Weapon Choice')
-  const userChoice = userChoiceField ? userChoiceField.value : undefined
+  try {
+    // Log interaction details
+    console.log('User ID:', interaction.user.id)
+    console.log('Interaction Custom ID:', interaction.customId)
+    console.log('Interaction Message ID:', interaction.message.id)
+    console.log('Interaction Guild ID:', interaction.guildId)
 
-  if (!userChoice) {
-    console.error("Error: 'userChoice' is undefined. Check if it's properly set in handlePowerLevelOptions.")
-    await interaction.reply({ content: 'An error occurred. Please try again.', ephemeral: true })
-    return
+    // Parse the selected power level
+    const selectedPowerLevel = parseInt(interaction.customId)
+    console.log('Parsed Selected Power Level:', selectedPowerLevel)
+
+    // Retrieve the userChoice from the embed field
+    const userChoiceField = interaction.message.embeds[0]?.fields.find((field) => field.name === 'Weapon Choice')
+    const userChoice = userChoiceField ? userChoiceField.value : undefined
+    console.log('Retrieved User Choice from Embed:', userChoice)
+
+    if (!userChoice) {
+      console.error("Error: 'userChoice' is undefined. Check if it's properly set in handlePowerLevelOptions.")
+      await interaction.reply({ content: 'An error occurred. Please try again.', ephemeral: true })
+      return
+    }
+
+    // Log before calling handleCombatCommand
+    console.log('Calling handleCombatCommand with parameters:', {
+      interaction: interaction.id,
+      action: 'attack',
+      userChoice,
+      selectedPowerLevel,
+      cooldowns: Array.from(cooldowns.entries()),
+    })
+
+    // Call the combat command
+    await handleCombatCommand(interaction, 'attack', userChoice, selectedPowerLevel, cooldowns)
+
+    console.log('--- handlePowerLevelSelection END ---')
+  } catch (error) {
+    console.error('Error in handlePowerLevelSelection:', error)
+    await interaction.reply({ content: 'An unexpected error occurred. Please contact support.', ephemeral: true })
   }
-
-  await handleCombatCommand(interaction, 'attack', userChoice, selectedPowerLevel, cooldowns)
 }
