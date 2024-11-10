@@ -74,7 +74,7 @@ export async function handlePowerLevelSelection(
     })
 
     // Call the combat command
-    await handleCombatCommand(interaction, 'attack', userChoice, selectedPowerLevel, cooldowns)
+    await handleCombatCommand(interaction, userChoice, selectedPowerLevel, cooldowns)
 
     console.log('--- handlePowerLevelSelection END ---')
   } catch (error) {
