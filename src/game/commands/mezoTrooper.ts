@@ -1,11 +1,4 @@
-import {
-  CommandInteraction,
-  ButtonInteraction,
-  EmbedBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  ActionRowBuilder,
-} from 'discord.js'
+import { CommandInteraction, ButtonInteraction, EmbedBuilder } from 'discord.js'
 import { mainMenu } from '../actions/common/buttons'
 
 export async function handleMezoTrooperCommand(interaction: CommandInteraction | ButtonInteraction) {

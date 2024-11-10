@@ -34,3 +34,8 @@ export function goBackButton() {
   const goBackButton = new ButtonBuilder().setCustomId('go_back').setLabel('Go Back').setStyle(ButtonStyle.Secondary)
   return goBackButton
 }
+
+export function continueButton() {
+  const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Success)
+  return continueButton
+}

@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{matrix.node-version}}
-          cache: "yarn"
+          cache: 'yarn'
 
       - name: Setup Environment Variables
         run: echo '${{ secrets.ENV_FILE }}' > .env
@@ -30,6 +30,6 @@ jobs:
 
       - name: Stop & Start
         run: |
-          pm2 stop "infinex-trooper"
-          pm2 start "infinex-trooper"
+          pm2 stop "mezo-trooper"
+          pm2 start "mezo-trooper"
           pm2 save
