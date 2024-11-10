@@ -1,4 +1,13 @@
-import { Client, ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, time } from 'discord.js'
+import {
+  Client,
+  ButtonInteraction,
+  bold,
+  EmbedBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ActionRowBuilder,
+  time,
+} from 'discord.js'
 import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { defenceOptions, quotes, weaponOptions } from '../constants'
 import { Trooper, Outcome } from '../../types'
@@ -14,7 +23,7 @@ export async function handleCombatCommand(
 ) {
   // await interaction.deferReply()
   const userId = interaction.user.id
-  const avatarUrl = interaction.user.displayAvatarURL() 
+  const avatarUrl = interaction.user.displayAvatarURL()
 
   // Cooldown logic for all commands
   const lastCommandTime = cooldowns.get(userId) || 0
@@ -42,14 +51,12 @@ export async function handleCombatCommand(
   }
 
   // Determine if the selected weapon is boosted
-  const boosted = randomBoostedItem()
+
   console.log('Available weapons:', weaponOptions)
   console.log('Available defenses:', defenceOptions)
-  console.log('Randomly chosen boosted item:', boosted)
   console.log('User choice:', userChoice)
-  console.log('boosted item:')
-  console.log(boosted)
-  const isBoosted = userChoice === boosted
+
+  const boostedResult = isBoosted()
 
   const successChance = getSuccessChance(powerLevel, trooper.currentTerritory)
   const isSuccessful = Math.random() < successChance
@@ -58,8 +65,9 @@ export async function handleCombatCommand(
   console.log('Points before calculation:', trooper.points)
   let pointsChange = isSuccessful ? calculatePoints(powerLevel, trooper.currentTerritory) : 0
   console.log('Points Change after calculation:', pointsChange)
-  if (isBoosted) {
-    pointsChange *= 5
+
+  if (boostedResult) {
+    pointsChange *= 7
   }
 
   let title = ''
@@ -76,74 +84,67 @@ export async function handleCombatCommand(
       trooper.points.toString(),
     )} points. Keep up the great work, Trooper! 💪`
 
-    if (isBoosted) {
-      const boosts = ['airdrop', 'teamwork', 'grenade', 'strike', 'ambush']
-      const randomIndex = Math.floor(Math.random() * boosts.length)
-      const boost = boosts[randomIndex]
+    if (boostedResult) {
       title = '🪖 Special Event!'
 
-      if (isBoosted) {
-        const boosts = [
-          {
-            type: 'airdrop',
-            title: '🪂 Airdrop Incoming!',
-            message: `The latest sharding BitcoinFi Assault Rifle was airdropped from Mezo, Fiat hive was ${bold(
-              'OBLITERATED',
-            )}!`,
-            gifUrl:
-              'https://media1.tenor.com/m/C0vINUKPPtUAAAAC/dizzy-flores-isabel-flores-isabelle-flores-dina-meyer-starship-troopers.gif',
-          },
-          {
-            type: 'grenade',
-            title: '💥 Grenade Deployed!',
-            message: `Tactical Mezo Decentralization Grenade deployed, Fiat hive was ${bold('NUKED')}!`,
-            gifUrl: 'https://i.gifer.com/IcYx.gif',
-          },
-          {
-            type: 'teamwork',
-            title: '👥 Teamwork Boost!',
-            message: `Squad ${bold('Mezo G6')} joins your position, Fiat hive was ${bold('DESTROYED')}!`,
-            gifUrl: 'https://c.tenor.com/41agPzUN8gAAAAAd/tenor.gif',
-          },
-          {
-            type: 'strike',
-            title: '⚔️ Precision Strike!',
-            message: `You initiated a precise Mezo strike, the Fiat Bug Empire is ${bold('DEVASTATED')}!`,
-            gifUrl: 'https://c.tenor.com/c9scti8m3HAAAAAd/tenor.gif',
-          },
-          {
-            type: 'ambush',
-            title: '🚀 Surprise Ambush!',
-            message: `You led an ambush, overwhelming the Fiat Empire forces, leaving them ${bold('CRUSHED')}!`,
-            gifUrl: 'https://c.tenor.com/yuBjFMtigKMAAAAd/tenor.gif',
-          },
-          {
-            type: 'recon',
-            title: '🔍 Recon Success!',
-            message: `Recon gathered crucial intel, catching Fiat Bugs off guard and ${bold(
-              'DEMOLISHING',
-            )} their defenses!`,
-            gifUrl: 'https://c.tenor.com/N4KgRUxSD7gAAAAd/tenor.gif',
-          },
-        ]
+      const boosts = [
+        {
+          type: 'airdrop',
+          title: '🪂 Airdrop Incoming!',
+          message: `The latest sharding BitcoinFi Assault Rifle was airdropped from Mezo, Fiat hive was ${bold(
+            'OBLITERATED',
+          )}!`,
+          gifUrl:
+            'https://media1.tenor.com/m/C0vINUKPPtUAAAAC/dizzy-flores-isabel-flores-isabelle-flores-dina-meyer-starship-troopers.gif',
+        },
+        {
+          type: 'grenade',
+          title: '💥 Grenade Deployed!',
+          message: `Tactical Mezo Decentralization Grenade deployed, Fiat hive was ${bold('NUKED')}!`,
+          gifUrl: 'https://i.gifer.com/IcYx.gif',
+        },
+        {
+          type: 'teamwork',
+          title: '👥 Teamwork Boost!',
+          message: `Squad ${bold('Mezo G6')} joins your position, Fiat hive was ${bold('DESTROYED')}!`,
+          gifUrl: 'https://c.tenor.com/41agPzUN8gAAAAAd/tenor.gif',
+        },
+        {
+          type: 'strike',
+          title: '⚔️ Precision Strike!',
+          message: `You initiated a precise Mezo strike, the Fiat Bug Empire is ${bold('DEVASTATED')}!`,
+          gifUrl: 'https://c.tenor.com/c9scti8m3HAAAAAd/tenor.gif',
+        },
+        {
+          type: 'ambush',
+          title: '🚀 Surprise Ambush!',
+          message: `You led an ambush, overwhelming the Fiat Empire forces, leaving them ${bold('CRUSHED')}!`,
+          gifUrl: 'https://c.tenor.com/yuBjFMtigKMAAAAd/tenor.gif',
+        },
+        {
+          type: 'recon',
+          title: '🔍 Recon Success!',
+          message: `Recon gathered crucial intel, catching Fiat Bugs off guard and ${bold(
+            'DEMOLISHING',
+          )} their defenses!`,
+          gifUrl: 'https://c.tenor.com/N4KgRUxSD7gAAAAd/tenor.gif',
+        },
+      ]
 
-        // Select a random boost eventi
-        const randomBoost = boosts[Math.floor(Math.random() * boosts.length)]
-        title = randomBoost.title
+      const randomBoost = boosts[Math.floor(Math.random() * boosts.length)]
+      title = randomBoost.title
 
-        // Common message structure with specific boost details
-        messageContent = `\n${randomBoost.message}\n\nYou earned ✨${bold(
-          pointsChange as any as string,
-        )} points, Hurray! \nNew total: ✨${bold(trooper.points.toString())} points.`
-        gifUrl = randomBoost.gifUrl
-      }
+      messageContent = `\n${randomBoost.message}\n\nYou earned ✨${bold(
+        pointsChange as any as string,
+      )} points, Hurray! \nNew total: ✨${bold(trooper.points.toString())} points.`
+      gifUrl = randomBoost.gifUrl
     }
   } else {
     title = '💀 Mission failed!'
     color = 0xffffff
     if (trooper.currentTerritory !== 'Satoshi’s Camp') {
       trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
-      const pointsBeforeReset = trooper.points 
+      const pointsBeforeReset = trooper.points
       trooper.points = 0
       messageContent = `You have been ${bold(
         'DEFEATED',
@@ -151,34 +152,34 @@ export async function handleCombatCommand(
         trooper.currentTerritory,
       )} territory.`
       gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
-            // Log the player's death in Satoshi’s Camp
-            await logPlayerDeath(
-              interaction.client as Client,
-              userId,
-              pointsBeforeReset,
-              trooper.currentTerritory,
-              itemUsed,
-              powerLevel,
-              avatarUrl
-            )
+      // Log the player's death in Satoshi’s Camp
+      await logPlayerDeath(
+        interaction.client as Client,
+        userId,
+        pointsBeforeReset,
+        trooper.currentTerritory,
+        itemUsed,
+        powerLevel,
+        avatarUrl,
+      )
     } else {
-      const pointsBeforeReset = trooper.points 
+      const pointsBeforeReset = trooper.points
       trooper.points = 0
       messageContent = `You were ${bold('DEFEATED')} and lost all your points! 💀💀💀`
       gifUrl = 'https://media1.tenor.com/m/iWJOxKk1s84AAAAd/bug-attack-starship-troopers.gif'
 
       messageContent += getQuote()
-            // Log the player's death in Satoshi’s Camp
+      // Log the player's death in Satoshi’s Camp
 
-            await logPlayerDeath(
-              interaction.client as Client,
-              userId,
-              pointsBeforeReset,
-              trooper.currentTerritory,
-              itemUsed,
-              powerLevel,
-              avatarUrl
-            )
+      await logPlayerDeath(
+        interaction.client as Client,
+        userId,
+        pointsBeforeReset,
+        trooper.currentTerritory,
+        itemUsed,
+        powerLevel,
+        avatarUrl,
+      )
     }
 
     cooldowns.set(userId, Date.now() + 1000) // Apply 4-hour cooldown 4 * 60 * 60 * 1000
@@ -210,9 +211,9 @@ export async function handleSpecialOutcome(
   userChoice: string,
   trooper: Trooper,
   userId: string,
-  powerLevel: number,           // Added
-  itemUsed: string,           // Added
-  avatarUrl: string,             // Added
+  powerLevel: number,
+  itemUsed: string,
+  avatarUrl: string,
   cooldowns: Map<string, number> = new Map(),
 ) {
   const outcomes: Record<string, Outcome> = {
@@ -236,8 +237,7 @@ export async function handleSpecialOutcome(
   }
 
   const outcome = outcomes[userChoice]
-  const pointsBeforeReset = trooper.points  // Capture points before resetting
-
+  const pointsBeforeReset = trooper.points
 
   await logPlayerDeath(
     interaction.client as Client,
@@ -246,7 +246,7 @@ export async function handleSpecialOutcome(
     trooper.currentTerritory,
     itemUsed,
     powerLevel,
-    avatarUrl
+    avatarUrl,
   )
   trooper.points = 0
   if (trooper.currentTerritory !== 'Satoshi’s Camp') {
@@ -280,13 +280,13 @@ function calculatePoints(powerLevel: number, territory: string): number {
       basePoints = 100
       break
     case Territories.YIELD_FARMING_BASE:
-      basePoints = 300
+      basePoints = 500
       break
     case Territories.LENDING_COMMAND:
-      basePoints = 600
+      basePoints = 1000
       break
     case Territories.EXPERIMENTAL_FRONTIER:
-      basePoints = 1200
+      basePoints = 2500
       break
     default:
       basePoints = 100
@@ -333,8 +333,6 @@ function getFallbackTerritory(currentTerritory: string): string {
   return currentIndex > 0 ? territoryOrder[currentIndex - 1] : 'satoshi’s camp'
 }
 
-function randomBoostedItem() {
-  const allOptions = [...weaponOptions, ...defenceOptions]
-  const randomIndex = Math.floor(Math.random() * allOptions.length)
-  return allOptions[randomIndex]
+function isBoosted() {
+  return Math.floor(Math.random() * 5) === 0 // 1 in 5 chance
 }
