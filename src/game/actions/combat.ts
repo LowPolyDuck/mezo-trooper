@@ -9,10 +9,11 @@ import {
   time,
 } from 'discord.js'
 import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
-import { defenceOptions, quotes, weaponOptions } from '../constants'
-import { Trooper, Outcome } from '../../types'
+import { quotes } from '../constants'
 import { addMillisecondsToDate, logPlayerDeath } from '../utilities'
-import { Territories } from '../constants'
+import { territories } from '../constants'
+import { handleSpecialOutcome } from './special'
+import { getFallbackTerritory } from './territories'
 
 export async function handleCombatCommand(
   interaction: ButtonInteraction,
@@ -21,28 +22,22 @@ export async function handleCombatCommand(
   powerLevel: number,
   cooldowns: Map<string, number> = new Map(),
 ) {
-  // await interaction.deferReply()
   const userId = interaction.user.id
   const avatarUrl = interaction.user.displayAvatarURL()
-
-  // Cooldown logic for all commands
   const lastCommandTime = cooldowns.get(userId) || 0
   const now = Date.now()
   const timeLeft = now - lastCommandTime
-  const isOnCooldown = timeLeft < 0
 
-  if (isOnCooldown) {
+  if (timeLeft < 0) {
     const waitUntil = addMillisecondsToDate(new Date(now), timeLeft)
-    await interaction.editReply(`You are on cooldown. Try again later. Wait ${time(waitUntil, 'R')}`)
+    await interaction.editReply(`You're on cooldown. Try again later. Wait ${time(waitUntil, 'R')}`)
     return
   }
 
-  // Game logic
-  // Fetch the current trooper's status, including territory
   const trooper = (await getTrooper(userId)) || {
     userId,
     points: 0,
-    currentTerritory: 'Satoshi’s Camp',
+    currentTerritory: territories.CAMP_SATOSHI,
   }
 
   if (interaction.isButton() && (userChoice === 'dagger' || userChoice === 'snacking')) {
@@ -50,25 +45,12 @@ export async function handleCombatCommand(
     return
   }
 
-  // Determine if the selected weapon is boosted
-
-  console.log('Available weapons:', weaponOptions)
-  console.log('Available defenses:', defenceOptions)
-  console.log('User choice:', userChoice)
-
   const boostedResult = isBoosted()
-
   const successChance = getSuccessChance(powerLevel, trooper.currentTerritory)
   const isSuccessful = Math.random() < successChance
-  console.log('Current Territory:', trooper.currentTerritory)
-  console.log('Power Level:', powerLevel)
-  console.log('Points before calculation:', trooper.points)
   let pointsChange = isSuccessful ? calculatePoints(powerLevel, trooper.currentTerritory) : 0
-  console.log('Points Change after calculation:', pointsChange)
 
-  if (boostedResult) {
-    pointsChange *= 7
-  }
+  if (boostedResult) pointsChange *= 7
 
   let title = ''
   let messageContent = ''
@@ -78,15 +60,11 @@ export async function handleCombatCommand(
   if (isSuccessful) {
     trooper.points += pointsChange
     title = '🎉 Mission accomplished!'
-    messageContent = `You've earned ✨${bold(
-      pointsChange + ' points',
-    )} for your efforts.\n\n Your new total is now ✨${bold(
+    messageContent = `You've earned ✨${bold(pointsChange.toString())} points!\nYour new total is ✨${bold(
       trooper.points.toString(),
     )} points. Keep up the great work, Trooper! 💪`
 
     if (boostedResult) {
-      title = '🪖 Special Event!'
-
       const boosts = [
         {
           type: 'airdrop',
@@ -133,69 +111,42 @@ export async function handleCombatCommand(
 
       const randomBoost = boosts[Math.floor(Math.random() * boosts.length)]
       title = randomBoost.title
-
-      messageContent = `\n${randomBoost.message}\n\nYou earned ✨${bold(
-        pointsChange as any as string,
-      )} points, Hurray! \nNew total: ✨${bold(trooper.points.toString())} points.`
+      messageContent = `${randomBoost.message}\nYou earned ✨${bold(
+        pointsChange.toString(),
+      )} points! New total: ✨${bold(trooper.points.toString())} points.`
       gifUrl = randomBoost.gifUrl
     }
   } else {
     title = '💀 Mission failed!'
     color = 0xffffff
-    if (trooper.currentTerritory !== 'Satoshi’s Camp') {
+    const pointsBeforeReset = trooper.points
+    trooper.points = 0
+    gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
+
+    if (trooper.currentTerritory !== territories.CAMP_SATOSHI) {
       trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
-      const pointsBeforeReset = trooper.points
-      trooper.points = 0
-      messageContent = `You have been ${bold(
-        'DEFEATED',
-      )} and lost all your points! 💀💀💀\n\n Mezo recovery ship deployed, falling back to the ${bold(
+      messageContent = `You were ${bold('DEFEATED')} and lost all points! Falling back to ${bold(
         trooper.currentTerritory,
-      )} territory.`
-      gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
-      // Log the player's death in Satoshi’s Camp
-      await logPlayerDeath(
-        interaction.client as Client,
-        userId,
-        pointsBeforeReset,
-        trooper.currentTerritory,
-        itemUsed,
-        powerLevel,
-        avatarUrl,
-      )
+      )}.`
     } else {
-      const pointsBeforeReset = trooper.points
-      trooper.points = 0
-      messageContent = `You were ${bold('DEFEATED')} and lost all your points! 💀💀💀`
-      gifUrl = 'https://media1.tenor.com/m/iWJOxKk1s84AAAAd/bug-attack-starship-troopers.gif'
-
-      messageContent += getQuote()
-      // Log the player's death in Satoshi’s Camp
-
-      await logPlayerDeath(
-        interaction.client as Client,
-        userId,
-        pointsBeforeReset,
-        trooper.currentTerritory,
-        itemUsed,
-        powerLevel,
-        avatarUrl,
-      )
+      messageContent = `You were ${bold('DEFEATED')} and lost all points! 💀💀💀\n${getQuote()}`
     }
 
-    cooldowns.set(userId, Date.now() + 1000) // Apply 4-hour cooldown 4 * 60 * 60 * 1000
-  }
-
-  function getQuote() {
-    const randomIndex = Math.floor(Math.random() * quotes.length)
-    return `\n\n${quotes[randomIndex]}\n`
+    await logPlayerDeath(
+      interaction.client as Client,
+      userId,
+      pointsBeforeReset,
+      trooper.currentTerritory,
+      itemUsed,
+      powerLevel,
+      avatarUrl,
+    )
+    cooldowns.set(userId, Date.now() + 4 * 60 * 60 * 1000) // 4-hour cooldown
   }
 
   await insertOrUpdatePlayer(trooper)
   const embed = new EmbedBuilder().setTitle(title).setDescription(messageContent).setColor(color)
-
-  if (gifUrl !== '') {
-    embed.setImage(gifUrl)
-  }
+  if (gifUrl) embed.setImage(gifUrl)
 
   const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Success)
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)
@@ -206,86 +157,25 @@ export async function handleCombatCommand(
   })
 }
 
-export async function handleSpecialOutcome(
-  interaction: ButtonInteraction,
-  userChoice: string,
-  trooper: Trooper,
-  userId: string,
-  powerLevel: number,
-  itemUsed: string,
-  avatarUrl: string,
-  cooldowns: Map<string, number> = new Map(),
-) {
-  const outcomes: Record<string, Outcome> = {
-    dagger: {
-      message: `A dagger? where's your ${bold('Mezo')} BitcoinFi-Assault Rifle trooper?\n\n You are overrun, you ${bold(
-        'DIED',
-      )}. 💀💀💀`,
-      gifUrl: 'https://media1.tenor.com/m/pvgQeEnepkQAAAAd/killer-bugs-starship-troopers.gif',
-    },
-    snacking: {
-      message: `Eating your mats soldier? ${bold(
-        'Mezo Troopers',
-      )}  run on adrenline & BitcoinFi weaponry only.\n\n Fiat bugs ambush you, you ${bold('DIED')}. 💀💀💀`,
-      gifUrl: 'https://media1.tenor.com/m/e-Ngztd2-lYAAAAC/starship-troopers-burn.gif',
-    },
-  }
-
-  if (!(userChoice in outcomes)) {
-    console.error(`Invalid userChoice: ${userChoice}`)
-    return
-  }
-
-  const outcome = outcomes[userChoice]
-  const pointsBeforeReset = trooper.points
-
-  await logPlayerDeath(
-    interaction.client as Client,
-    userId,
-    pointsBeforeReset,
-    trooper.currentTerritory,
-    itemUsed,
-    powerLevel,
-    avatarUrl,
-  )
-  trooper.points = 0
-  if (trooper.currentTerritory !== 'Satoshi’s Camp') {
-    trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
-    cooldowns.set(userId, Date.now() + 1000)
-  } else {
-    cooldowns.set(userId, Date.now() + 1000)
-  }
-
-  await insertOrUpdatePlayer(trooper)
-  const embed = new EmbedBuilder()
-    .setTitle("You're the worst Mezo Trooper ever!") //
-    .setDescription(outcome.message)
-    .setImage(outcome.gifUrl)
-    .setColor(0xffffff)
-
-  const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Success)
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)
-
-  await interaction.update({
-    embeds: [embed],
-    components: [actionRow],
-  })
+function getQuote() {
+  const randomIndex = Math.floor(Math.random() * quotes.length)
+  return quotes[randomIndex]
 }
 
 function calculatePoints(powerLevel: number, territory: string): number {
   let basePoints: number
 
   switch (territory) {
-    case Territories.SATOSHIS_CAMP:
+    case territories.CAMP_SATOSHI:
       basePoints = 100
       break
-    case Territories.YIELD_FARMING_BASE:
+    case territories.MATS_FARMING_BASE:
       basePoints = 500
       break
-    case Territories.LENDING_COMMAND:
+    case territories.MEZO_COMMAND:
       basePoints = 1000
       break
-    case Territories.EXPERIMENTAL_FRONTIER:
+    case territories.BITCOINFI_FRONTIER:
       basePoints = 2500
       break
     default:
@@ -309,16 +199,16 @@ function calculatePoints(powerLevel: number, territory: string): number {
 function getSuccessChance(powerLevel: number, territory: string): number {
   let successChance: number
   switch (territory) {
-    case Territories.SATOSHIS_CAMP:
+    case territories.CAMP_SATOSHI:
       successChance = powerLevel === 100 ? 0.5 : powerLevel === 10 ? 0.75 : 0.95
       break
-    case Territories.YIELD_FARMING_BASE:
+    case territories.MATS_FARMING_BASE:
       successChance = powerLevel === 100 ? 0.45 : powerLevel === 10 ? 0.7 : 0.9
       break
-    case Territories.LENDING_COMMAND:
+    case territories.MEZO_COMMAND:
       successChance = powerLevel === 100 ? 0.4 : powerLevel === 10 ? 0.65 : 0.85
       break
-    case Territories.EXPERIMENTAL_FRONTIER:
+    case territories.BITCOINFI_FRONTIER:
       successChance = powerLevel === 100 ? 0.3 : powerLevel === 10 ? 0.5 : 0.8
       break
     default:
@@ -327,12 +217,6 @@ function getSuccessChance(powerLevel: number, territory: string): number {
   return successChance
 }
 
-function getFallbackTerritory(currentTerritory: string): string {
-  const territoryOrder = ['satoshi’s camp', 'yield farming base', 'lending command', 'experimental frontier']
-  const currentIndex = territoryOrder.indexOf(currentTerritory)
-  return currentIndex > 0 ? territoryOrder[currentIndex - 1] : 'satoshi’s camp'
-}
-
 function isBoosted() {
-  return Math.floor(Math.random() * 5) === 0 // 1 in 5 chance
+  return Math.floor(Math.random() * 5) === 0
 }

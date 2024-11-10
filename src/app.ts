@@ -2,7 +2,6 @@ import { Client, GatewayIntentBits, Partials } from 'discord.js'
 import { SetUpDiscord } from './discord'
 import { TOKEN } from './config/config'
 import { handleMezoTrooperCommand } from './game/commands/mezoTrooper'
-import { handleHelpCommand } from './game/commands/help'
 import { handleLeaderboardCommand } from './game/commands/leaderboard'
 import { endRound, getNextRoundEndTime, updateLeaderboardMessage } from './game/utilities'
 import { handlePowerLevelOptions, handlePowerLevelSelection } from './game/actions/power'
@@ -12,7 +11,7 @@ import { handleHelp } from './game/actions/help'
 import { handleHowToPlay } from './game/actions/play'
 import { handleMain } from './game/actions/main'
 import { handleWormholeCommand, handleWormholeOptions } from './game/actions/wormhole'
-import { activeGames } from './game/constants'
+import { activeGames, defences, weapons } from './game/constants'
 
 const discordClient = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
@@ -40,23 +39,20 @@ export async function Run(): Promise<void> {
 
         switch (commandName) {
           case 'mezo_trooper': {
-            const userGameKey = `${guildId}-${user.id}`; // Wrap in braces to fix lexical declaration issue
-    
+            const userGameKey = `${guildId}-${user.id}` // Wrap in braces to fix lexical declaration issue
+
             if (activeGames.has(userGameKey)) {
               await interaction.reply({
                 content: 'You already have an active game. Complete it before starting a new one!',
                 ephemeral: true,
-              });
-              return;
+              })
+              return
             }
-    
-            activeGames.set(userGameKey, user.id);
-            await handleMezoTrooperCommand(interaction);
-            break;
-          }
-          case 'help':
-            await handleHelpCommand(interaction)
+
+            activeGames.set(userGameKey, user.id)
+            await handleMezoTrooperCommand(interaction)
             break
+          }
           case 'leaderboard':
             await handleLeaderboardCommand(interaction)
             break
@@ -100,14 +96,14 @@ export async function Run(): Promise<void> {
           case 'help':
             await handleHelp(interaction)
             break
-          case 'blaster':
-          case 'cannon':
-          case 'fist':
-          case 'dagger':
-          case 'build_wall':
-          case 'set_trap':
-          case 'supply_run':
-          case 'snacking':
+          case weapons.BLASTER:
+          case weapons.CANNON:
+          case weapons.FIST:
+          case weapons.DAGGER:
+          case defences.BUILD_WALL:
+          case defences.SET_TRAP:
+          case defences.SUPPLY_RUN:
+          case defences.SNACKING:
             await handlePowerLevelOptions(interaction)
             break
           case '1':

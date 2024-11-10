@@ -1,10 +1,10 @@
 import { Client, EmbedBuilder, TextChannel, userMention } from 'discord.js'
 import { getLeaderBoard, clearAllPoints, incrementMatsInGame } from '../provider/mongodb'
-import { MATS_AWARDS, weaponDictionary } from './constants'
+import { MATS_AWARDS } from './constants'
 import { LEADERBOARD_CHANNEL_ID, MESSAGE_ID } from '../config/config'
 import { pointsManager } from '../dripApi/pointsManager'
 import { activeGames } from './constants'
-import { DEATH_LOG_CHANNEL_ID } from '../config/config';
+import { DEATH_LOG_CHANNEL_ID } from '../config/config'
 
 export function getNextRoundEndTime(): Date {
   const now = new Date()
@@ -91,22 +91,22 @@ export function getTimeRemainingString(roundEndTime: Date): string {
 export async function endRound(
   pastLeaderboards: Array<{ date: string; leaderboard: string }>,
   guildId: string,
-  userId: string
+  userId: string,
 ) {
   // Placeholder function to handle end of round operations
-  console.log('Round ended, awarding mats...');
-  const leaderboard = await getLeaderBoard();
+  console.log('Round ended, awarding mats...')
+  const leaderboard = await getLeaderBoard()
 
   if (leaderboard.length > 0) {
     const topPlayers = leaderboard.slice(0, 3)
     for (const [index, player] of topPlayers.entries()) {
-      const matsAwarded = MATS_AWARDS[index];
-      
+      const matsAwarded = MATS_AWARDS[index]
+
       // Award Mats via Drip API
-      await pointsManager.addPoints(player.userId, matsAwarded);
-      console.log(`Awarded ${matsAwarded} mats to ${player.userId}`);
-      
-      await incrementMatsInGame(player.userId, matsAwarded);
+      await pointsManager.addPoints(player.userId, matsAwarded)
+      console.log(`Awarded ${matsAwarded} mats to ${player.userId}`)
+
+      await incrementMatsInGame(player.userId, matsAwarded)
     }
     // Store past leaderboard
     pastLeaderboards.unshift({
@@ -118,12 +118,12 @@ export async function endRound(
     if (pastLeaderboards.length > 3) pastLeaderboards.pop() // Keep only last 3 days
   }
   // Reset points for all players and log the action
-  await clearAllPoints();
-  console.log('All points reset for the new round.');
+  await clearAllPoints()
+  console.log('All points reset for the new round.')
 
-  const userGameKey = `${guildId}-${userId}`;
-  activeGames.delete(userGameKey); // Clear the specific user’s game instance
-  console.log(`Game instance cleared for user ${userId} in guild ${guildId}.`);
+  const userGameKey = `${guildId}-${userId}`
+  activeGames.delete(userGameKey) // Clear the specific user’s game instance
+  console.log(`Game instance cleared for user ${userId} in guild ${guildId}.`)
 }
 
 export function addMillisecondsToDate(inputDate: Date, millisecondsToAdd: number): Date {
@@ -157,41 +157,41 @@ export async function logPlayerDeath(
   territory: string,
   itemUsed: string,
   powerLevel: number,
-  avatarUrl: string
+  avatarUrl: string,
 ) {
   try {
-    const channel = await client.channels.fetch(DEATH_LOG_CHANNEL_ID);
+    const channel = await client.channels.fetch(DEATH_LOG_CHANNEL_ID)
     if (!channel?.isTextBased()) {
-      console.log('Death log channel is not text-based or could not be found.');
-      return;
+      console.log('Death log channel is not text-based or could not be found.')
+      return
     }
 
-    const textChannel = channel as TextChannel;
+    const textChannel = channel as TextChannel
     // Format territory and itemUsed in title case and bold
-    const formattedTerritory = `**${toTitleCase(territory)}**`;
-    const formattedItemUsed = `**${toTitleCase(itemUsed)}**`;
+    const formattedTerritory = `**${toTitleCase(territory)}**`
+    const formattedItemUsed = `**${toTitleCase(itemUsed)}**`
 
     const embed = new EmbedBuilder()
       .setTitle('💀 Player Death Log')
       .setDescription(
         `${userMention(userId)} has fallen in the line of duty. Here are the final stats:\n\n` +
-        `**Points at Death:** ${points}\n` +
-        `**Territory:** ${formattedTerritory}\n` +
-        `**Last Command Used:** ${formattedItemUsed}\n` +
-        `**Power Level:** ${powerLevel}`
+          `**Points at Death:** ${points}\n` +
+          `**Territory:** ${formattedTerritory}\n` +
+          `**Last Command Used:** ${formattedItemUsed}\n` +
+          `**Power Level:** ${powerLevel}`,
       )
       .setColor(0xff0000) // Red color to indicate death
       .setThumbnail(avatarUrl)
-      .setTimestamp();
+      .setTimestamp()
 
-    await textChannel.send({ embeds: [embed] });
-    console.log(`Logged death for user ${userId} in ${territory} with ${points} points.`);
+    await textChannel.send({ embeds: [embed] })
+    console.log(`Logged death for user ${userId} in ${territory} with ${points} points.`)
   } catch (error) {
-    console.error('Failed to log player death:', error);
+    console.error('Failed to log player death:', error)
   }
 }
 
 // Helper function to convert a string to title case
-function toTitleCase(str: string): string {
-  return str.replace(/\b\w/g, (char) => char.toUpperCase());
+export function toTitleCase(str: string): string {
+  return str.replace(/\b\w/g, (char) => char.toUpperCase())
 }

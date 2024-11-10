@@ -26,10 +26,10 @@ Commands are simple but effective, helping players attack, defend, and navigate 
 
 Players progress through increasingly challenging territories, with each step unlocking greater rewards but adding to the risk:
 
-1. **Satoshi’s Camp**: Training zone with moderate rewards and minimal risk.
-2. **Yield Farming Base**: Intermediate zone with higher rewards for defending BitcoinFi.
-3. **Lending Command**: High-risk zone linked to BitcoinFi lending activities. Losing here costs all points and results in a territory drop.
-4. **Experimental Frontier**: The ultimate zone for testing BitcoinFi assets. Maximum points on offer, but losses will send you back to a lower territory.
+1. **Camp Satoshi**: Training zone with moderate rewards and minimal risk.
+2. **Mats Farming Base**: Intermediate zone with higher rewards for defending BitcoinFi.
+3. **Mezo Command**: High-risk zone linked to BitcoinFi lending activities. Losing here costs all points and results in a territory drop.
+4. **BitcoinFi Frontier**: The ultimate zone for testing BitcoinFi assets. Maximum points on offer, but losses will send you back to a lower territory.
 
 ---
 
