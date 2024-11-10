@@ -69,6 +69,20 @@ export async function Run(): Promise<void> {
       if (interaction.isButton()) {
         const { customId } = interaction
 
+        // Check if this user is the one who started
+        const userId = interaction.user.id
+        const guildId = interaction.guildId
+        const userGameKey = `${guildId}-${userId}`
+        const gameStarterId = (activeGames.get(userGameKey) || '') as string
+
+        if (gameStarterId !== userId) {
+          await interaction.reply({
+            content: 'Only the user who started the game can interact with it.',
+            ephemeral: true,
+          })
+          return
+        }
+
         if (customId.startsWith('wormhole_')) {
           const destination = customId.replace('wormhole_', '').replace(/_/g, ' ')
           await handleWormholeCommand(interaction, destination)
