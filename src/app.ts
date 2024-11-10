@@ -88,7 +88,7 @@ export async function Run(): Promise<void> {
           await handleWormholeCommand(interaction, destination)
           return
         }
-
+        console.log('BUTTON ' + customId)
         switch (interaction.customId) {
           case 'attack':
             await handleAttackOptions(interaction)
