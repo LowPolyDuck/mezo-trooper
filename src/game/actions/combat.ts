@@ -9,7 +9,7 @@ import {
   time,
 } from 'discord.js'
 import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
-import { quotes } from '../constants'
+import { defences, quotes, weapons } from '../constants'
 import { addMillisecondsToDate, logPlayerDeath } from '../utilities'
 import { territories } from '../constants'
 import { handleSpecialOutcome } from './special'
@@ -40,7 +40,7 @@ export async function handleCombatCommand(
     currentTerritory: territories.CAMP_SATOSHI,
   }
 
-  if (interaction.isButton() && (userChoice === 'dagger' || userChoice === 'snacking')) {
+  if (interaction.isButton() && (userChoice === weapons.DAGGER || userChoice === defences.SNACKING)) {
     await handleSpecialOutcome(interaction, userChoice, trooper, userId, powerLevel, userChoice, avatarUrl)
     return
   }

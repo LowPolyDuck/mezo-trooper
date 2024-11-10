@@ -1,32 +1,10 @@
-import {
-  ButtonInteraction,
-  StringSelectMenuBuilder,
-  ActionRowBuilder,
-  StringSelectMenuInteraction,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-} from 'discord.js'
+import { ButtonInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from 'discord.js'
 import { handleCombatCommand } from './combat'
 import { CustomId, getLabelByCustomId } from '../utilities'
 import { goBackButton } from './common/buttons'
-import { activeGames } from '../constants'
 
 export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
-  const userChoice = interaction.customId // Save the user’s weapon choice
-  const guildId = interaction.guildId;
-  const userId = interaction.user.id;
-  const userGameKey = `${guildId}-${userId}`;
-  const gameStarterId = (activeGames.get(userGameKey) || "") as string;
-
-  // Check if this user is the one who started the game
-  if (gameStarterId !== userId) {
-    await interaction.reply({
-      content: 'Only the user who started the game can interact with it.',
-      ephemeral: true,
-    });
-    return;
-  }
+  const userChoice = interaction.customId
 
   const embed = new EmbedBuilder()
     .setTitle(`Select your Power Level:`)
@@ -39,15 +17,12 @@ export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
     .addFields({ name: 'Weapon Choice', value: userChoice, inline: true }) // Add the choice as a hidden field
 
   const risk1 = new ButtonBuilder().setCustomId('1').setLabel('Safe 1x').setEmoji('😐').setStyle(ButtonStyle.Secondary)
-
   const risk2 = new ButtonBuilder().setCustomId('5').setLabel('Risky 5x').setEmoji('🤔').setStyle(ButtonStyle.Primary)
-
   const risk3 = new ButtonBuilder()
     .setCustomId('10')
     .setLabel('Dangerous 10x')
     .setEmoji('😱')
     .setStyle(ButtonStyle.Success)
-
   const risk4 = new ButtonBuilder()
     .setCustomId('100')
     .setLabel('Insane 100x')
@@ -55,7 +30,6 @@ export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
     .setStyle(ButtonStyle.Danger)
 
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(risk1, risk2, risk3, risk4, goBackButton())
-  // Store the userChoice in the content message so it can be retrieved later
   await interaction.update({
     embeds: [embed],
     components: [actionRow],

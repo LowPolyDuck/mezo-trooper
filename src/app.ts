@@ -39,7 +39,7 @@ export async function Run(): Promise<void> {
 
         switch (commandName) {
           case 'mezo_trooper': {
-            const userGameKey = `${guildId}-${user.id}` // Wrap in braces to fix lexical declaration issue
+            const userGameKey = `${guildId}-${user.id}`
 
             if (activeGames.has(userGameKey)) {
               await interaction.reply({
