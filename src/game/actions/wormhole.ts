@@ -109,7 +109,7 @@ async function updatePlayerTerritory(userId: string, currentPoints: number, newT
     [territories.BITCOINFI_FRONTIER]: 20000,
   }
 
-  const fee = gasFees[newTerritory.toLowerCase()]
+  const fee = gasFees[newTerritory]
   console.log(`Calculated fee for ${newTerritory}: ${fee}`)
 
   if (currentPoints >= fee) {
