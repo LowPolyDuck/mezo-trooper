@@ -61,7 +61,7 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
 
   console.log('Current trooper data:', trooper)
 
-  if (trooper.currentTerritory.toLowerCase() === destination) {
+  if (trooper.currentTerritory === destination) {
     console.log(`User already in ${destination} territory`)
 
     await interaction.update({

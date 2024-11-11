@@ -2,7 +2,7 @@ import { Client, GatewayIntentBits, Partials } from 'discord.js'
 import { SetUpDiscord } from './discord'
 import { TOKEN } from './config/config'
 import { handleMezoTrooperCommand } from './game/commands/mezoTrooper'
-import { endRound, getNextRoundEndTime, updateLeaderboardMessage } from './game/utilities'
+import { endRound, getNextRoundEndTime, toTitleCase, updateLeaderboardMessage } from './game/utilities'
 import { handlePowerLevelOptions, handlePowerLevelSelection } from './game/actions/power'
 import { handleAttackOptions } from './game/actions/attack'
 import { handleDefendOptions } from './game/actions/defend'
@@ -78,7 +78,7 @@ export async function Run(): Promise<void> {
         // }
 
         if (customId.startsWith('wormhole_')) {
-          const destination = customId.replace('wormhole_', '').replace(/_/g, ' ')
+          const destination = toTitleCase(customId.replace('wormhole_', '').replace(/_/g, ' '))
           await handleWormholeCommand(interaction, destination)
           return
         }
