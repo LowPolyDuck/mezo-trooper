@@ -6,12 +6,16 @@ import { territories } from '../constants'
 import { toTitleCase, updateLeaderboardMessage } from '../utilities'
 
 export async function handleWormholeOptions(interaction: ButtonInteraction) {
+  console.log('handleWormholeOptions called')
+
   const options = [
     { label: `🌱 ${territories.CAMP_SATOSHI}`, value: territories.CAMP_SATOSHI, cost: '0 points' },
     { label: `🌾 ${territories.MATS_FARMING_BASE}`, value: territories.MATS_FARMING_BASE, cost: '1,000 points' },
     { label: `🏦 ${territories.MEZO_COMMAND}`, value: territories.MEZO_COMMAND, cost: '10,000 points' },
     { label: `🌌 ${territories.BITCOINFI_FRONTIER}`, value: territories.BITCOINFI_FRONTIER, cost: '20,000 points' },
   ]
+
+  console.log('Wormhole options:', options)
 
   const buttons = options.map((option) =>
     new ButtonBuilder()
@@ -35,6 +39,8 @@ export async function handleWormholeOptions(interaction: ButtonInteraction) {
       })),
     )
 
+  console.log('Sending wormhole options to user')
+
   await interaction.update({
     embeds: [embed],
     components: [actionRow],
@@ -42,7 +48,10 @@ export async function handleWormholeOptions(interaction: ButtonInteraction) {
 }
 
 export async function handleWormholeCommand(interaction: ButtonInteraction, destination: string) {
+  console.log(`handleWormholeCommand called with destination: ${destination}`)
+
   const userId = interaction.user.id
+  console.log(`User ID: ${userId}`)
 
   const trooper: Trooper = (await getTrooper(userId)) || {
     userId,
@@ -50,7 +59,11 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
     currentTerritory: territories.CAMP_SATOSHI,
   }
 
-  if (toTitleCase(trooper.currentTerritory) === destination) {
+  console.log('Current trooper data:', trooper)
+
+  if (trooper.currentTerritory.toLowerCase() === destination) {
+    console.log(`User already in ${destination} territory`)
+
     await interaction.update({
       content: `You are already in ${bold(destination)} territory!`,
       components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
@@ -59,6 +72,8 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
   }
 
   const updateSuccessful = await updatePlayerTerritory(userId, trooper.points, destination)
+  console.log(`Territory update successful: ${updateSuccessful}`)
+
   const wormholeGifUrl = 'https://media1.tenor.com/m/mny-6-XqV1kAAAAd/wormhole.gif'
 
   if (updateSuccessful) {
@@ -66,11 +81,15 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
       .setTitle(`Wormhole Travel to ${bold(destination)}!`)
       .setDescription(`You have successfully traveled to ${bold(destination)}. Points fees deducted.`)
       .setImage(wormholeGifUrl)
+    console.log('Sending successful travel message')
+
     await interaction.update({
       embeds: [embed],
       components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
     })
   } else {
+    console.log(`Insufficient points for user to travel to ${destination}`)
+
     await interaction.update({
       content: `You do not have enough points to travel to ${bold(destination)}.`,
       components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
@@ -79,6 +98,10 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
 }
 
 async function updatePlayerTerritory(userId: string, currentPoints: number, newTerritory: string) {
+  console.log(
+    `updatePlayerTerritory called with userId: ${userId}, currentPoints: ${currentPoints}, newTerritory: ${newTerritory}`,
+  )
+
   const gasFees: Record<string, number> = {
     [territories.CAMP_SATOSHI]: 0,
     [territories.MATS_FARMING_BASE]: 1000,
@@ -87,14 +110,19 @@ async function updatePlayerTerritory(userId: string, currentPoints: number, newT
   }
 
   const fee = gasFees[newTerritory.toLowerCase()]
+  console.log(`Calculated fee for ${newTerritory}: ${fee}`)
+
   if (currentPoints >= fee) {
     await insertOrUpdatePlayer({
       userId,
       points: currentPoints - fee,
       currentTerritory: newTerritory,
     })
+    console.log('Player territory updated successfully')
+
     return true
   }
 
+  console.log('Not enough points for territory update')
   return false
 }
