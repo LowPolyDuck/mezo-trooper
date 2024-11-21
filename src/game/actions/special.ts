@@ -32,15 +32,15 @@ export async function handleSpecialOutcome(
   const outcome = outcomes[userChoice]
   const pointsBeforeReset = trooper.points
 
-  // await logPlayerDeath(
-  //   interaction.client as Client,
-  //   userId,
-  //   pointsBeforeReset,
-  //   trooper.currentTerritory,
-  //   itemUsed,
-  //   powerLevel,
-  //   avatarUrl,
-  // )
+  await logPlayerDeath(
+    interaction.client as Client,
+    userId,
+    pointsBeforeReset,
+    trooper.currentTerritory,
+    itemUsed,
+    powerLevel,
+    avatarUrl,
+  )
 
   trooper.points = 0
   trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)

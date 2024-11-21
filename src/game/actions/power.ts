@@ -2,9 +2,17 @@ import { ButtonInteraction, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedB
 import { handleCombatCommand } from './combat'
 import { CustomId, getLabelByCustomId } from '../utilities'
 import { goBackButton } from './common/buttons'
+import { THUMBNAIL_MAPPING } from '../constants'
 
 export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
   const userChoice = interaction.customId
+
+  if (!interaction.deferred) {
+    await interaction.deferUpdate();
+  }
+
+    // Get the thumbnail URL for the selected weapon
+    const thumbnailUrl = THUMBNAIL_MAPPING[userChoice] || '';
 
   const embed = new EmbedBuilder()
     .setTitle(`Select your Power Level:`)
@@ -15,6 +23,7 @@ export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
     )
     .setColor(0xff494a)
     .addFields({ name: 'Weapon Choice', value: userChoice, inline: true }) // Add the choice as a hidden field
+    .setThumbnail(thumbnailUrl)
 
   const risk1 = new ButtonBuilder().setCustomId('1').setLabel('Safe 1x').setEmoji('😐').setStyle(ButtonStyle.Secondary)
   const risk2 = new ButtonBuilder().setCustomId('5').setLabel('Risky 5x').setEmoji('🤔').setStyle(ButtonStyle.Primary)
@@ -30,12 +39,21 @@ export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
     .setStyle(ButtonStyle.Danger)
 
   const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(risk1, risk2, risk3, risk4, goBackButton())
-  await interaction.update({
-    embeds: [embed],
-    components: [actionRow],
-  })
+  try {
+    await interaction.editReply({
+      embeds: [embed],
+      components: [actionRow],
+    });
+  } catch (error) {
+    console.error('Error in handlePowerLevelOptions:', error);
+    if (!interaction.replied) {
+      await interaction.followUp({
+        content: 'An error occurred while updating power level options. Please try again.',
+        ephemeral: true,
+      });
+    }
+  }
 }
-
 export async function handlePowerLevelSelection(
   interaction: ButtonInteraction,
   cooldowns: Map<string, number> = new Map(),

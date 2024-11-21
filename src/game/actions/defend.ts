@@ -3,6 +3,10 @@ import { goBackButton } from './common/buttons'
 import { defences } from '../constants'
 
 export async function handleDefendOptions(interaction: ButtonInteraction) {
+  // Defer the interaction update to avoid expiration issues
+  if (!interaction.deferred) {
+    await interaction.deferUpdate();
+  }
   const embed = new EmbedBuilder()
     .setTitle(`Select your Mezo Defi Defense:`)
     .setDescription('Some defenses are more effective than others, choose wisely!')
@@ -40,8 +44,17 @@ export async function handleDefendOptions(interaction: ButtonInteraction) {
     goBackButton(),
   )
 
-  await interaction.update({
-    embeds: [embed],
-    components: [actionRow],
-  })
+  // Safely update the interaction
+  try {
+    await interaction.editReply({
+      embeds: [embed],
+      components: [actionRow],
+    });
+  } catch (error) {
+    console.error('Error in handleDefendptions:', error);
+    await interaction.followUp({
+      content: 'Something went wrong while updating the defend options. Please try again.',
+      ephemeral: true,
+    });
+  }
 }

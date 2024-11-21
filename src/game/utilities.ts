@@ -13,6 +13,8 @@ export function getNextRoundEndTime(): Date {
   return now
 }
 
+let lastLeaderboardMessageId: string | null = null; // Track the last leaderboard message ID
+
 export async function updateLeaderboardMessage(client: Client) {
   try {
     const leaderboard = await getLeaderBoard()
@@ -48,37 +50,36 @@ export async function updateLeaderboardMessage(client: Client) {
       )
     })
 
-    console.log('fetcjing ' + LEADERBOARD_CHANNEL_ID)
+    console.log('fetching ' + LEADERBOARD_CHANNEL_ID)
     const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID)
 
     if (!channel?.isTextBased()) {
       console.log('Leaderboard channel is not text-based or could not be found.')
       return
     }
-    console.log('jee')
-    const textChannel = channel as TextChannel
+    const textChannel = channel as TextChannel;
 
-    try {
-      // Try to fetch the specific message by MESSAGE_ID
-      const message = await textChannel.messages.fetch(MESSAGE_ID)
-      console.log('messageid' + MESSAGE_ID)
-      await message.edit({ embeds: [leaderboardEmbed] })
-    } catch (error) {
-      console.log('Specific leaderboard message not found. Attempting to update the last message.')
-
-      // Fetch the last message in the channel
-      const messages = await textChannel.messages.fetch({ limit: 1 })
-      const lastMessage = messages.first()
-
-      if (lastMessage) {
-        await lastMessage.edit({ embeds: [leaderboardEmbed] })
-      } else {
-        console.log('No existing message to edit. Sending a new leaderboard message.')
-        await textChannel.send({ embeds: [leaderboardEmbed] })
+     // Check if there is an existing leaderboard message
+     if (lastLeaderboardMessageId) {
+      try {
+        const existingMessage = await textChannel.messages.fetch(lastLeaderboardMessageId);
+        // Update the existing leaderboard message
+        await existingMessage.edit({ embeds: [leaderboardEmbed] });
+        console.log('Updated the existing leaderboard message.');
+        return;
+      } catch (error) {
+        console.log('Failed to fetch or update the previous leaderboard message. Sending a new one.');
+        // If fetching the previous message fails, reset the tracker
+        lastLeaderboardMessageId = null;
       }
     }
+
+    // Send a new leaderboard message if no existing one is found
+    const newMessage = await textChannel.send({ embeds: [leaderboardEmbed] });
+    lastLeaderboardMessageId = newMessage.id; // Track the new message ID
+    console.log('Sent a new leaderboard message and updated the tracker.');
   } catch (error) {
-    console.error('Failed to update leaderboard message:', error)
+    console.error('Failed to update leaderboard message:', error);
   }
 }
 

@@ -6,6 +6,10 @@ import { territories } from '../constants'
 import { toTitleCase, updateLeaderboardMessage } from '../utilities'
 
 export async function handleWormholeOptions(interaction: ButtonInteraction) {
+    // Defer the interaction update to avoid expiration issues
+    if (!interaction.deferred) {
+      await interaction.deferUpdate();
+    }
   console.log('handleWormholeOptions called')
 
   const options = [
@@ -40,14 +44,26 @@ export async function handleWormholeOptions(interaction: ButtonInteraction) {
     )
 
   console.log('Sending wormhole options to user')
-
-  await interaction.update({
-    embeds: [embed],
-    components: [actionRow],
-  })
+  // Safely update the interaction
+  try {
+    await interaction.editReply({
+      embeds: [embed],
+      components: [actionRow],
+    });
+  } catch (error) {
+    console.error('Error in wormhole:', error);
+    await interaction.followUp({
+      content: 'Something went wrong while updating the wormhole options. Please try again.',
+      ephemeral: true,
+    });
+  }
 }
 
 export async function handleWormholeCommand(interaction: ButtonInteraction, destination: string) {
+      // Defer the interaction update to avoid expiration issues
+      if (!interaction.deferred) {
+        await interaction.deferUpdate();
+      }
   console.log(`handleWormholeCommand called with destination: ${destination}`)
 
   const userId = interaction.user.id
@@ -83,10 +99,19 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
       .setImage(wormholeGifUrl)
     console.log('Sending successful travel message')
 
-    await interaction.update({
-      embeds: [embed],
+    try {
+      await interaction.editReply({
+        embeds: [embed],
       components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
-    })
+      });
+    } catch (error) {
+      console.error('Error in wormhole:', error);
+      await interaction.followUp({
+        content: 'Something went wrong while updating the wormhole options. Please try again.',
+        ephemeral: true,
+      });
+    }
+  
   } else {
     console.log(`Insufficient points for user to travel to ${destination}`)
 
