@@ -3,6 +3,10 @@ import { getLabelByCustomId } from '../utilities'
 import { goBackButton } from './common/buttons'
 
 export async function handleAttackOptions(interaction: ButtonInteraction) {
+    // Defer the interaction update to avoid expiration issues
+    if (!interaction.deferred) {
+      await interaction.deferUpdate();
+    }
   const embed = new EmbedBuilder()
     .setTitle(`Select your BitcoinFi Weapon:`)
     .setDescription('Some weapons are more effective than others, choose wisely!')
@@ -40,8 +44,17 @@ export async function handleAttackOptions(interaction: ButtonInteraction) {
     goBackButton(),
   )
 
-  await interaction.update({
-    embeds: [embed],
-    components: [actionRow],
-  })
+  // Safely update the interaction
+  try {
+    await interaction.editReply({
+      embeds: [embed],
+      components: [actionRow],
+    });
+  } catch (error) {
+    console.error('Error in handleAttackOptions:', error);
+    await interaction.followUp({
+      content: 'Something went wrong while updating the attack options. Please try again.',
+      ephemeral: true,
+    });
+  }
 }

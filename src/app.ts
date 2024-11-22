@@ -57,7 +57,7 @@ export async function Run(): Promise<void> {
             })
             break
         }
-        //await updateLeaderboardMessage(discordClient)
+        await updateLeaderboardMessage(discordClient)
       }
 
       if (interaction.isButton()) {

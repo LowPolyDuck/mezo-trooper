@@ -31,3 +31,14 @@ export const territories = {
 }
 
 export const activeGames = new Map<string, string>()
+
+export const THUMBNAIL_MAPPING: Record<string, string> = {
+  blaster: 'https://upload.wikimedia.org/wikipedia/commons/2/25/StormTrooper_Blaster.jpg',
+  cannon: 'https://example.com/cannon-thumbnail.png',
+  fist: 'https://example.com/fist-thumbnail.png',
+  dagger: 'https://example.com/dagger-thumbnail.png',
+  build_wall: 'https://example.com/build-wall-thumbnail.png',
+  set_trap: 'https://example.com/set-trap-thumbnail.png',
+  supply_run: 'https://example.com/supply-run-thumbnail.png',
+  snacking: 'https://example.com/snacking-thumbnail.png',
+}

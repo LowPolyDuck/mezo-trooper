@@ -1,4 +1,4 @@
-import { ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, time } from 'discord.js'
+import { ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, time, Client } from 'discord.js'
 import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { defences, quotes, weapons } from '../constants'
 import { addMillisecondsToDate, logPlayerDeath } from '../utilities'
@@ -12,6 +12,10 @@ export async function handleCombatCommand(
   powerLevel: number,
   cooldowns: Map<string, number> = new Map(),
 ) {
+  // Defer the interaction update to avoid expiration issues
+  if (!interaction.deferred) {
+    await interaction.deferUpdate();
+  }
   console.log('--- handleCombatCommand START ---')
 
   try {
@@ -148,6 +152,18 @@ export async function handleCombatCommand(
     } else {
       title = '💀 Mission failed!'
       color = 0xffffff
+
+      // Log the player's death
+      await logPlayerDeath(
+        interaction.client as Client,
+        userId,
+        trooper.points,
+        trooper.currentTerritory,
+        userChoice,
+        powerLevel,
+        avatarUrl
+      );
+
       trooper.points = 0
       gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
 
@@ -178,10 +194,20 @@ export async function handleCombatCommand(
       .setStyle(ButtonStyle.Success)
     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)
 
-    await interaction.update({
+  // Safely update the interaction
+  try {
+    await interaction.editReply({
       embeds: [embed],
       components: [actionRow],
-    })
+    });
+  } catch (error) {
+    console.error('Error in handleAttackOptions:', error);
+    await interaction.followUp({
+      content: 'Something went wrong while updating the attack options. Please try again.',
+      ephemeral: true,
+    });
+  }
+
 
     console.log('--- handleCombatCommand END ---')
   } catch (error) {
