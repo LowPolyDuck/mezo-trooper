@@ -19,5 +19,6 @@ export async function handleMezoTrooperCommand(interaction: CommandInteraction |
     embeds: [welcomeEmbed],
     content: '',
     components: [mainMenu()],
+    ephemeral: true,
   })
 }

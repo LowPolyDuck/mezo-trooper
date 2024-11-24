@@ -8,11 +8,11 @@ export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
   const userChoice = interaction.customId
 
   if (!interaction.deferred) {
-    await interaction.deferUpdate();
+    await interaction.deferUpdate()
   }
 
-    // Get the thumbnail URL for the selected weapon
-    const thumbnailUrl = THUMBNAIL_MAPPING[userChoice] || '';
+  // Get the thumbnail URL for the selected weapon
+  const thumbnailUrl = THUMBNAIL_MAPPING[userChoice] || ''
 
   const embed = new EmbedBuilder()
     .setTitle(`Select your Power Level:`)
@@ -43,14 +43,14 @@ export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
     await interaction.editReply({
       embeds: [embed],
       components: [actionRow],
-    });
+    })
   } catch (error) {
-    console.error('Error in handlePowerLevelOptions:', error);
+    console.error('Error in handlePowerLevelOptions:', error)
     if (!interaction.replied) {
       await interaction.followUp({
         content: 'An error occurred while updating power level options. Please try again.',
         ephemeral: true,
-      });
+      })
     }
   }
 }
@@ -61,11 +61,10 @@ export async function handlePowerLevelSelection(
   console.log('--- handlePowerLevelSelection START ---')
 
   try {
-    // Log interaction details
-    console.log('User ID:', interaction.user.id)
-    console.log('Interaction Custom ID:', interaction.customId)
-    console.log('Interaction Message ID:', interaction.message.id)
-    console.log('Interaction Guild ID:', interaction.guildId)
+    //console.log('User ID:', interaction.user.id)
+    //console.log('Interaction Custom ID:', interaction.customId)
+    //console.log('Interaction Message ID:', interaction.message.id)
+    //console.log('Interaction Guild ID:', interaction.guildId)
 
     // Parse the selected power level
     const selectedPowerLevel = parseInt(interaction.customId)
