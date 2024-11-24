@@ -181,17 +181,17 @@ export async function logPlayerDeath(
 
     const textChannel = channel as TextChannel
     // Format territory and itemUsed in title case and bold
-    const formattedTerritory = `**${toTitleCase(territory)}**`
-    const formattedItemUsed = `**${toTitleCase(itemUsed)}**`
+    const formattedTerritory = `${toTitleCase(territory)}`
+    const formattedItemUsed = `${toTitleCase(itemUsed)}`
 
     const embed = new EmbedBuilder()
       .setTitle('💀 Player Death Log')
-      .setDescription(
-        `${userMention(userId)} has fallen in the line of duty. Here are the final stats:\n\n` +
-          `**Points at Death:** ${points}\n` +
-          `**Territory:** ${formattedTerritory}\n` +
-          `**Last Command Used:** ${formattedItemUsed}\n` +
-          `**Power Level:** ${powerLevel}`,
+      .setDescription(`${userMention(userId)} has fallen in the line of duty.`)
+      .addFields(
+        { name: '✨ Points at Death', value: `> ${points}`, inline: false },
+        { name: '🪐 Territory', value: `> ${formattedTerritory}`, inline: false },
+        { name: '🛡️ Last Action', value: `> ${formattedItemUsed}`, inline: false },
+        { name: '⚡ Power Level', value: `> ${powerLevel}`, inline: false },
       )
       .setColor(0xff0000)
       .setThumbnail(avatarUrl)
