@@ -38,6 +38,7 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
     )
     .setColor(0xff494a)
     .setThumbnail(avatarUrl)
+    .setImage('https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/mezo-trooper.jpg')
 
   try {
     await interaction.editReply({

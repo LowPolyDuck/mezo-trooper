@@ -126,6 +126,10 @@ async function updatePlayerTerritory(userId: string, currentPoints: number, newT
     `updatePlayerTerritory called with userId: ${userId}, currentPoints: ${currentPoints}, newTerritory: ${newTerritory}`,
   )
 
+  if (newTerritory == 'Bitcoinfi Frontier') {
+    newTerritory = 'BitcoinFi Frontier'
+  }
+
   const gasFees: Record<string, number> = {
     [territories.CAMP_SATOSHI]: 0,
     [territories.MATS_FARMING_BASE]: 1000,
