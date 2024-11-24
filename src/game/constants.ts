@@ -21,7 +21,7 @@ export const quotes = [
   'Come On, You Mezo Apes, You Wanna Live Forever?',
   'The Only Good Fiat Bug Is A Dead Fiat Bug.',
 ]
-export const MATS_AWARDS = [1000, 500, 200]
+export const MATS_AWARDS = [2000, 1000, 500, 250, 250, 250, 100, 100, 50, 50]
 
 export const territories = {
   CAMP_SATOSHI: 'Camp Satoshi',

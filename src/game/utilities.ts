@@ -36,13 +36,12 @@ export async function updateLeaderboardMessage(client: Client) {
     leaderboard.forEach((entry, index) => {
       const rankAndUser = `#${index + 1}. ${userMention(entry.userId)}`
       const points = `${entry.points} points`
-      const territory = entry.currentTerritory
-      const award = index < MATS_AWARDS.length ? ` 🏆 ${MATS_AWARDS[index]} mats 🏆` : ''
+      const award = index < MATS_AWARDS.length ? ` 🪙 ${MATS_AWARDS[index]} mats` : ''
 
       leaderboardEmbed.addFields(
         { name: 'Rank & User', value: `${rankAndUser}`, inline: true },
         { name: 'Points', value: `${points}`, inline: true },
-        { name: 'Territory', value: `${territory}${award}`, inline: true },
+        { name: 'Award', value: `${award}`, inline: true },
       )
     })
 
@@ -180,7 +179,6 @@ export async function logPlayerDeath(
     }
 
     const textChannel = channel as TextChannel
-    // Format territory and itemUsed in title case and bold
     const formattedTerritory = `${toTitleCase(territory)}`
     const formattedItemUsed = `${toTitleCase(itemUsed)}`
 
