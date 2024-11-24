@@ -48,9 +48,8 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
   } catch (error) {
     console.error('Error in handleMain:', error)
     if (!interaction.replied) {
-      await interaction.followUp({
+      await interaction.editReply({
         content: 'An error occurred while updating your status. Please try again.',
-        ephemeral: true,
       })
     }
   }

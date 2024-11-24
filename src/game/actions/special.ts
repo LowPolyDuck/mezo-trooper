@@ -3,6 +3,7 @@ import { insertOrUpdatePlayer } from '../../provider/mongodb'
 import { Trooper, Outcome } from '../../types'
 import { logPlayerDeath } from '../utilities'
 import { getFallbackTerritory } from './territories'
+import { continueButton } from './common/buttons'
 
 export async function handleSpecialOutcome(
   interaction: ButtonInteraction,
@@ -19,7 +20,7 @@ export async function handleSpecialOutcome(
       message: `A dagger? where's your ${bold('Mezo')} BitcoinFi-Assault Rifle trooper?\n\n You are overrun, you ${bold(
         'DIED',
       )}. 💀💀💀`,
-      gifUrl: 'https://media1.tenor.com/m/pvgQeEnepkQAAAAd/killer-bugs-starship-troopers.gif',
+      gifUrl: 'https://c.tenor.com/pvgQeEnepkQAAAAd/tenor.gif',
     },
     snacking: {
       message: `Eating your mats soldier? ${bold(
@@ -54,10 +55,9 @@ export async function handleSpecialOutcome(
     .setImage(outcome.gifUrl)
     .setColor(0xffffff)
 
-  const continueButton = new ButtonBuilder().setCustomId('continue').setLabel('Continue').setStyle(ButtonStyle.Success)
-  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)
+  const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())
 
-  await interaction.update({
+  await interaction.editReply({
     embeds: [embed],
     components: [actionRow],
   })

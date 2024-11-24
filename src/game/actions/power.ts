@@ -23,7 +23,7 @@ export async function handlePowerLevelOptions(interaction: ButtonInteraction) {
     )
     .setColor(0xff494a)
     .addFields({ name: 'Weapon Choice', value: userChoice, inline: true }) // Add the choice as a hidden field
-    .setThumbnail(thumbnailUrl)
+    .setImage(thumbnailUrl)
 
   const risk1 = new ButtonBuilder().setCustomId('1').setLabel('Safe 1x').setEmoji('😐').setStyle(ButtonStyle.Secondary)
   const risk2 = new ButtonBuilder().setCustomId('5').setLabel('Risky 5x').setEmoji('🤔').setStyle(ButtonStyle.Primary)

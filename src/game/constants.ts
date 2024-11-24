@@ -33,12 +33,12 @@ export const territories = {
 export const activeGames = new Map<string, string>()
 
 export const THUMBNAIL_MAPPING: Record<string, string> = {
-  blaster: 'https://upload.wikimedia.org/wikipedia/commons/2/25/StormTrooper_Blaster.jpg',
-  cannon: 'https://example.com/cannon-thumbnail.png',
-  fist: 'https://example.com/fist-thumbnail.png',
-  dagger: 'https://example.com/dagger-thumbnail.png',
-  build_wall: 'https://example.com/build-wall-thumbnail.png',
-  set_trap: 'https://example.com/set-trap-thumbnail.png',
-  supply_run: 'https://example.com/supply-run-thumbnail.png',
+  blaster: 'https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/btc-blaster.jpg',
+  cannon: 'https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/mezo-canon.jpg',
+  fist: 'https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/btc-fist.jpg',
+  dagger: 'https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/btc-dagger.jpg',
+  build_wall: 'https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/btc-wall.jpg',
+  set_trap: 'https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/btc-trap.jpg',
+  supply_run: 'https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/mezo-supply.jpg',
   snacking: 'https://example.com/snacking-thumbnail.png',
 }
