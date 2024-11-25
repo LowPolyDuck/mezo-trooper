@@ -14,6 +14,7 @@ export async function handleWormholeOptions(interaction: ButtonInteraction) {
   const trooper: Trooper = (await getTrooper(userId)) || {
     userId,
     points: 0,
+    deaths: 0,
     currentTerritory: territories.CAMP_SATOSHI,
   }
 
@@ -76,6 +77,7 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
   const trooper: Trooper = (await getTrooper(userId)) || {
     userId,
     points: 0,
+    deaths: 0,
     currentTerritory: territories.CAMP_SATOSHI,
   }
 
@@ -88,7 +90,7 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
     return
   }
 
-  const updateSuccessful = await updatePlayerTerritory(userId, trooper.points, destination)
+  const updateSuccessful = await updatePlayerTerritory(userId, trooper, destination)
   console.log(`Territory update successful: ${updateSuccessful}`)
 
   const wormholeGifUrl = 'https://media1.tenor.com/m/mny-6-XqV1kAAAAd/wormhole.gif'
@@ -121,10 +123,11 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
   }
 }
 
-async function updatePlayerTerritory(userId: string, currentPoints: number, newTerritory: string) {
+async function updatePlayerTerritory(userId: string, trooper: Trooper, newTerritory: string) {
   console.log(
-    `updatePlayerTerritory called with userId: ${userId}, currentPoints: ${currentPoints}, newTerritory: ${newTerritory}`,
-  )
+    `updatePlayerTerritory called with userId: ${userId}, currentPoints: ${trooper.points}, newTerritory: ${newTerritory}`,
+  );
+
 
   if (newTerritory == 'Bitcoinfi Frontier') {
     newTerritory = 'BitcoinFi Frontier'
@@ -140,13 +143,12 @@ async function updatePlayerTerritory(userId: string, currentPoints: number, newT
   const fee = gasFees[newTerritory]
   console.log(`Calculated fee for ${newTerritory}: ${fee}`)
 
-  if (currentPoints >= fee) {
-    await insertOrUpdatePlayer({
-      userId,
-      points: currentPoints - fee,
-      currentTerritory: newTerritory,
-    })
-    return true
+  if (trooper.points >= fee) {
+    trooper.points -= fee;
+    trooper.currentTerritory = newTerritory;
+    await insertOrUpdatePlayer(trooper);
+    return true;
+  
   }
   return false
 }

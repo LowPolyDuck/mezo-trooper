@@ -35,7 +35,8 @@ export async function getLeaderBoard(): Promise<Trooper[]> {
   return documents.map((doc) => ({
     userId: doc.userId,
     points: doc.points,
-    currentTerritory: doc.currentTerritory, // Include currentTerritory in the mapping
+    currentTerritory: doc.currentTerritory, 
+    deaths: doc.deaths || 0, 
   })) as Trooper[];
 }
 
@@ -51,6 +52,7 @@ export async function getTrooper(userId: string): Promise<Trooper | undefined> {
     points: document.points,
     currentTerritory: document.currentTerritory, // Include currentTerritory
     matsEarnedInGame: document.matsEarnedInGame || 0,
+    deaths: document.deaths || 0,
   } as Trooper;
 }
 
@@ -89,6 +91,18 @@ export async function incrementMatsInGame(userId: string, mats: number): Promise
 //   console.log(`Trooper territory updated: ${userId} to ${territory}`);
 //   await client.close();
 // }
+export async function incrementDeaths(userId: string): Promise<void> {
+  const client = new MongoClient(mongoUri);
+  await client.connect();
+  const collection = client.db(MONGO_DB).collection(MONGO_COLLECTION);
+  await collection.updateOne(
+    { userId: userId },
+    { $inc: { deaths: 1 } },
+    { upsert: true }
+  );
+  await client.close();
+  console.log(`Incremented deaths for user ${userId}.`);
+}
 
 export async function updateAndFetchRanks(): Promise<Trooper[]> {
   const client = new MongoClient(mongoUri);

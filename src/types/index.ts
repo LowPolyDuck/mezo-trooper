@@ -3,6 +3,7 @@ export interface Trooper {
   points: number
   currentTerritory: string
   matsEarnedInGame?: number; 
+  deaths: number;
 }
 
 export type LeaderBoard = {

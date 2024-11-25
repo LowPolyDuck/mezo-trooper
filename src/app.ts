@@ -11,6 +11,7 @@ import { handleHowToPlay } from './game/actions/play'
 import { handleMain } from './game/actions/main'
 import { handleWormholeCommand, handleWormholeOptions } from './game/actions/wormhole'
 import { activeGames, defences, weapons } from './game/constants'
+import { handleCooldown, checkCooldown } from './game/actions/cooldown'
 
 const discordClient = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
@@ -35,6 +36,19 @@ export async function Run(): Promise<void> {
 
         switch (commandName) {
           case 'mezo_trooper': {
+
+            // Check if a cooldown exists
+            const userId = user.id;
+            const now = Date.now();
+            const cooldownEndTime = cooldowns.get(userId) || 0;
+            const isOnCooldown = cooldownEndTime > now;
+
+            if (isOnCooldown) {
+              console.log('Player is on cooldown. Triggering handleCooldown.');
+              await handleCooldown(interaction, cooldownEndTime); // Show the cooldown embed
+              break;
+            }
+                      
             await handleMezoTrooperCommand(interaction)
             break
           }
@@ -73,9 +87,22 @@ export async function Run(): Promise<void> {
             break
           case 'main':
           case 'go_back':
-          case 'continue':
-            await handleMain(interaction, roundEndTime, discordClient)
-            break
+          case 'continue': {
+            // Check if a cooldown exists
+            const userId = interaction.user.id;
+            const now = Date.now();
+            const cooldownEndTime = cooldowns.get(userId) || 0;
+            const isOnCooldown = cooldownEndTime > now;
+
+            if (isOnCooldown) {
+              console.log('Player is on cooldown. Triggering handleCooldown.');
+              await handleCooldown(interaction, cooldownEndTime); // Show the cooldown embed
+              break;
+            }
+          
+            await handleMain(interaction, roundEndTime, discordClient);
+            break;
+          }
           case 'help':
             await handleHelp(interaction)
             break

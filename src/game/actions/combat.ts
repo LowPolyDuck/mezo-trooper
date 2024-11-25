@@ -1,11 +1,12 @@
 import { ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, Client } from 'discord.js'
-import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
+import { getTrooper, insertOrUpdatePlayer, incrementDeaths } from '../../provider/mongodb'
 import { defences, quotes, weapons } from '../constants'
 import { logPlayerDeath } from '../utilities'
 import { territories } from '../constants'
 import { handleSpecialOutcome } from './special'
 import { getFallbackTerritory } from './territories'
-import { continueButton } from './common/buttons'
+import { continueButton, goBackButton } from './common/buttons'
+import { checkCooldown, handleCooldown } from './cooldown'
 
 export async function handleCombatCommand(
   interaction: ButtonInteraction,
@@ -24,39 +25,41 @@ export async function handleCombatCommand(
     const avatarUrl = interaction.user.displayAvatarURL()
     const lastCommandTime = cooldowns.get(userId) || 0
     const now = Date.now()
-    const timeLeft = now - lastCommandTime
+    // const timeLeft = lastCommandTime - now;
 
     console.log('User ID:', userId)
     console.log('Avatar URL:', avatarUrl)
     console.log('Last Command Time:', lastCommandTime)
     console.log('Current Time:', now)
-    console.log('Time Left:', timeLeft)
+    // console.log('Time Left:', timeLeft)
 
-    // if (timeLeft < 0) {
-    //   const waitUntil = addMillisecondsToDate(new Date(now), timeLeft)
-    //   const timeRemaining = time(waitUntil, 'R') // Format remaining time
-
-    //   console.log('User is on cooldown. Time left:', timeLeft)
-
+    // if (timeLeft > 0) {
+    //   // Player is on cooldown
     //   const cooldownEmbed = new EmbedBuilder()
     //     .setTitle('🛌 You’re on R&R!')
     //     .setDescription(
-    //       `You've been put on rest and relaxation. You'll be back in action soon!\n\n**Cooldown Ends:** ${timeRemaining}`,
+    //       `You've been put on rest and relaxation. You'll be back in action soon!\n\n**Cooldown Ends:** <t:${Math.floor(
+    //         (lastCommandTime / 1000),
+    //       )}:R>`,
     //     )
     //     .setColor(0x3498db) // Cooldown color
-    //     .setImage('https://gifs.cackhanded.net/starship-troopers/kiss.gif') // Replace with your GIF URL
-
-    //   await interaction.update({
+    //     .setImage('https://gifs.cackhanded.net/starship-troopers/kiss.gif'); // Replace with your GIF URL
+    //     const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+ 
+    //       goBackButton(),
+    //     )
+    //   await interaction.editReply({
     //     embeds: [cooldownEmbed],
-    //     components: [], // Remove any buttons or components
-    //   })
+    //     components: [actionRow], 
+    //   });
 
-    //   return
+    //   return;
     // }
 
     const trooper = (await getTrooper(userId)) || {
       userId,
       points: 0,
+      deaths: 0, 
       currentTerritory: territories.CAMP_SATOSHI,
     }
 
@@ -165,6 +168,8 @@ export async function handleCombatCommand(
       )
 
       trooper.points = 0
+      trooper.deaths = (trooper.deaths || 0) + 1; 
+      await incrementDeaths(userId); // Update death count in database
       gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
 
       if (trooper.currentTerritory !== territories.CAMP_SATOSHI) {
@@ -177,10 +182,12 @@ export async function handleCombatCommand(
       }
 
       console.log('Mission Failure. Points reset to:', trooper.points)
+       // Set 5-minute cooldown
+      cooldowns.set(userId, now + 5 * 60 * 1000); // 5 minutes in milliseconds
+      console.log('Cooldown set for user:', userId)
     }
 
-    cooldowns.set(userId, Date.now() + 4 * 60 * 60 * 1000) // 4-hour cooldown
-    console.log('Cooldown set for user:', userId)
+   
 
     await insertOrUpdatePlayer(trooper)
     console.log('Player data updated in database:', trooper)
@@ -253,16 +260,16 @@ function getSuccessChance(powerLevel: number, territory: string): number {
   let successChance: number
   switch (territory) {
     case territories.CAMP_SATOSHI:
-      successChance = powerLevel === 100 ? 0.7 : powerLevel === 10 ? 0.75 : 0.97
+      successChance = powerLevel === 100 ? 0.8 : powerLevel === 10 ? 0.85 : powerLevel === 5 ? 0.95 : 0.97
       break
     case territories.MATS_FARMING_BASE:
-      successChance = powerLevel === 100 ? 0.7 : powerLevel === 10 ? 0.75 : 0.95
+      successChance = powerLevel === 100 ? 0.75 : powerLevel === 10 ? 0.80 : powerLevel === 5 ? 0.92 : 0.95
       break
     case territories.MEZO_COMMAND:
-      successChance = powerLevel === 100 ? 0.6 : powerLevel === 10 ? 0.7 : 0.9
+      successChance = powerLevel === 100 ? 0.7 : powerLevel === 10 ? 0.75 : powerLevel === 5 ? 0.90 : 0.92
       break
     case territories.BITCOINFI_FRONTIER:
-      successChance = powerLevel === 100 ? 0.5 : powerLevel === 10 ? 0.6 : 0.85
+      successChance = powerLevel === 100 ? 0.5 : powerLevel === 10 ? 0.7 : powerLevel === 5 ? 0.80 : 0.90
       break
     default:
       successChance = 0.95
