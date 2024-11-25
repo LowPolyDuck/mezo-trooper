@@ -5,7 +5,7 @@ import { getTimeRemainingString, toTitleCase, updateLeaderboardMessage } from '.
 
 export async function handleMain(interaction: ButtonInteraction, roundEndTime: Date, discordClient: Client) {
   if (!interaction.deferred) {
-    await interaction.deferUpdate();
+    await interaction.deferUpdate()
   }
   const userId = interaction.user.id
   const trooper = await getTrooper(userId)
@@ -19,9 +19,9 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
 
   const avatarUrl = interaction.user.displayAvatarURL()
 
-    // Fetch the leaderboard to determine the user's rank
-    const leaderboard = await getLeaderBoard();
-    const userRank = leaderboard.findIndex((entry) => entry.userId === userId) + 1; // Rank starts from 1  
+  // Fetch the leaderboard to determine the user's rank
+  const leaderboard = await getLeaderBoard()
+  const userRank = leaderboard.findIndex((entry) => entry.userId === userId) + 1 // Rank starts from 1
 
   const embed = new EmbedBuilder()
     .setTitle('🪖 Mezo Trooper Status')
@@ -30,28 +30,28 @@ export async function handleMain(interaction: ButtonInteraction, roundEndTime: D
         'Stay vigilant, and push forward to conquer new territories and earn your place among the legendary defenders of Mezo.\n\n',
     )
     .addFields(
-      { name: 'Rank', value: `🏅 ${userRank > 0 ? `#${userRank}` : 'Unranked'}`, inline: true },
-      { name: 'Points', value: `✨ ${trooper.points}`, inline: true },
-      { name: 'Current Territory', value: `🪐 ${toTitleCase(trooper.currentTerritory)}`, inline: true },
-      { name: 'Mats Earned', value: `🪙 ${trooper.matsEarnedInGame || 0}`, inline: true },
-      { name: 'Next Round In', value: `⌛ ${timeRemainingString}`, inline: false },
+      { name: 'Rank', value: `> 🏅 ${userRank > 0 ? `#${userRank}` : 'Unranked'}`, inline: true },
+      { name: 'Points', value: `> ✨ ${trooper.points}`, inline: true },
+      { name: 'Current Territory', value: `> 🪐 ${toTitleCase(trooper.currentTerritory)}`, inline: true },
+      { name: 'Mats Earned', value: `> 🪙 ${trooper.matsEarnedInGame || 0}`, inline: true },
+      { name: 'Next Round In', value: `> ⌛ ${timeRemainingString}`, inline: false },
     )
     .setColor(0xff494a)
     .setThumbnail(avatarUrl)
+    .setImage('https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/mezo-trooper.jpg')
 
-    try {
+  try {
+    await interaction.editReply({
+      content: '',
+      embeds: [embed],
+      components: [mainMenu()],
+    })
+  } catch (error) {
+    console.error('Error in handleMain:', error)
+    if (!interaction.replied) {
       await interaction.editReply({
-        content: '',
-        embeds: [embed],
-        components: [mainMenu()],
-      });
-    } catch (error) {
-      console.error('Error in handleMain:', error);
-      if (!interaction.replied) {
-        await interaction.followUp({
-          content: 'An error occurred while updating your status. Please try again.',
-          ephemeral: true,
-        });
-      }
+        content: 'An error occurred while updating your status. Please try again.',
+      })
     }
   }
+}

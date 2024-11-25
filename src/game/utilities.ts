@@ -1,10 +1,10 @@
 import { Client, EmbedBuilder, TextChannel, userMention } from 'discord.js'
 import { getLeaderBoard, clearAllPoints, incrementMatsInGame } from '../provider/mongodb'
 import { MATS_AWARDS } from './constants'
-import { LEADERBOARD_CHANNEL_ID, MESSAGE_ID } from '../config/config'
+import { LOG_CHANNEL_ID } from '../config/config'
 import { pointsManager } from '../dripApi/pointsManager'
 import { activeGames } from './constants'
-import { DEATH_LOG_CHANNEL_ID } from '../config/config'
+import { GAME_CHANNEL_ID } from '../config/config'
 
 export function getNextRoundEndTime(): Date {
   const now = new Date()
@@ -13,7 +13,7 @@ export function getNextRoundEndTime(): Date {
   return now
 }
 
-let lastLeaderboardMessageId: string | null = null; // Track the last leaderboard message ID
+let lastLeaderboardMessageId: string | null = null // Track the last leaderboard message ID
 
 export async function updateLeaderboardMessage(client: Client) {
   try {
@@ -26,60 +26,69 @@ export async function updateLeaderboardMessage(client: Client) {
       return
     }
 
-    // Create the leaderboard embed
     const leaderboardEmbed = new EmbedBuilder()
       .setTitle('🏆 Mezo Trooper - Leaderboard')
       .setDescription(
         `Earn daily mats by participating in Mezo Trooper! 🛡️\nTop 3 earn extra rewards and defend Mezo against the Fiat Bug Empire! 🐞\n\nTime until next round: <t:${roundEndTimestamp}:R>`,
       )
-      .setColor(0xffd700) // Gold color for a trophy-like theme
+      .setColor(0xffd700)
 
-    // Add leaderboard entries in rows of three fields
     leaderboard.forEach((entry, index) => {
       const rankAndUser = `#${index + 1}. ${userMention(entry.userId)}`
       const points = `${entry.points} points`
-      const territory = entry.currentTerritory
-
-      // Include award if available
-      const award = index < MATS_AWARDS.length ? ` 🏆 ${MATS_AWARDS[index]} mats 🏆` : ''
+      const award = index < MATS_AWARDS.length ? ` 🪙 ${MATS_AWARDS[index]} mats` : ''
 
       leaderboardEmbed.addFields(
         { name: 'Rank & User', value: `${rankAndUser}`, inline: true },
         { name: 'Points', value: `${points}`, inline: true },
-        { name: 'Territory', value: `${territory}${award}`, inline: true },
+        { name: 'Award', value: `${award}`, inline: true },
       )
     })
 
-    console.log('fetching ' + LEADERBOARD_CHANNEL_ID)
-    const channel = await client.channels.fetch(LEADERBOARD_CHANNEL_ID)
+    console.log('fetching ' + GAME_CHANNEL_ID)
+    const channel = await client.channels.fetch(GAME_CHANNEL_ID)
 
     if (!channel?.isTextBased()) {
-      console.log('Leaderboard channel is not text-based or could not be found.')
+      console.log('Game channel is not text-based or could not be found.')
       return
     }
-    const textChannel = channel as TextChannel;
+    const textChannel = channel as TextChannel
+    let messageToUpdate
 
-     // Check if there is an existing leaderboard message
-     if (lastLeaderboardMessageId) {
+    if (lastLeaderboardMessageId) {
       try {
-        const existingMessage = await textChannel.messages.fetch(lastLeaderboardMessageId);
-        // Update the existing leaderboard message
-        await existingMessage.edit({ embeds: [leaderboardEmbed] });
-        console.log('Updated the existing leaderboard message.');
-        return;
-      } catch (error) {
-        console.log('Failed to fetch or update the previous leaderboard message. Sending a new one.');
-        // If fetching the previous message fails, reset the tracker
-        lastLeaderboardMessageId = null;
+        messageToUpdate = await textChannel.messages.fetch(lastLeaderboardMessageId)
+      } catch {
+        console.log('Could not fetch the last leaderboard message.')
       }
+    }
+    if (!messageToUpdate) {
+      try {
+        const messages = await textChannel.messages.fetch({ limit: 1 })
+        if (messages.size > 0) {
+          messageToUpdate = messages.first()
+        }
+      } catch {
+        console.log('Could not fetch the first message in the channel.')
+      }
+    }
+    if (messageToUpdate) {
+      try {
+        await messageToUpdate.edit({ embeds: [leaderboardEmbed] })
+        lastLeaderboardMessageId = messageToUpdate.id
+        console.log('Updated the leaderboard message.')
+      } catch (error) {
+        console.error('Failed to update the leaderboard message:', error)
+      }
+      return
     }
 
     // Send a new leaderboard message if no existing one is found
-    const newMessage = await textChannel.send({ embeds: [leaderboardEmbed] });
-    lastLeaderboardMessageId = newMessage.id; // Track the new message ID
-    console.log('Sent a new leaderboard message and updated the tracker.');
+    const newMessage = await textChannel.send({ embeds: [leaderboardEmbed] })
+    lastLeaderboardMessageId = newMessage.id // Track the new message ID
+    console.log('Sent a new leaderboard message and updated the tracker.')
   } catch (error) {
-    console.error('Failed to update leaderboard message:', error);
+    console.error('Failed to update leaderboard message:', error)
   }
 }
 
@@ -163,27 +172,26 @@ export async function logPlayerDeath(
   avatarUrl: string,
 ) {
   try {
-    const channel = await client.channels.fetch(DEATH_LOG_CHANNEL_ID)
+    const channel = await client.channels.fetch(LOG_CHANNEL_ID)
     if (!channel?.isTextBased()) {
-      console.log('Death log channel is not text-based or could not be found.')
+      console.log('Message channel is not text-based or could not be found.')
       return
     }
 
     const textChannel = channel as TextChannel
-    // Format territory and itemUsed in title case and bold
-    const formattedTerritory = `**${toTitleCase(territory)}**`
-    const formattedItemUsed = `**${toTitleCase(itemUsed)}**`
+    const formattedTerritory = `${toTitleCase(territory)}`
+    const formattedItemUsed = `${toTitleCase(itemUsed)}`
 
     const embed = new EmbedBuilder()
       .setTitle('💀 Player Death Log')
-      .setDescription(
-        `${userMention(userId)} has fallen in the line of duty. Here are the final stats:\n\n` +
-          `**Points at Death:** ${points}\n` +
-          `**Territory:** ${formattedTerritory}\n` +
-          `**Last Command Used:** ${formattedItemUsed}\n` +
-          `**Power Level:** ${powerLevel}`,
+      .setDescription(`${userMention(userId)} has fallen in the line of duty.`)
+      .addFields(
+        { name: '✨ Points at Death', value: `> ${points}`, inline: false },
+        { name: '🪐 Territory', value: `> ${formattedTerritory}`, inline: false },
+        { name: '🛡️ Last Action', value: `> ${formattedItemUsed}`, inline: false },
+        { name: '⚡ Power Level', value: `> ${powerLevel}`, inline: false },
       )
-      .setColor(0xff0000) // Red color to indicate death
+      .setColor(0xff0000)
       .setThumbnail(avatarUrl)
       .setTimestamp()
 
@@ -194,7 +202,6 @@ export async function logPlayerDeath(
   }
 }
 
-// Helper function to convert a string to title case
 export function toTitleCase(str: string): string {
   return str.replace(/\b\w/g, (char) => char.toUpperCase())
 }

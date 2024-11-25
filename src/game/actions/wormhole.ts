@@ -3,14 +3,19 @@ import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { Trooper } from '../../types'
 import { continueButton, goBackButton } from './common/buttons'
 import { territories } from '../constants'
-import { toTitleCase, updateLeaderboardMessage } from '../utilities'
 
 export async function handleWormholeOptions(interaction: ButtonInteraction) {
-    // Defer the interaction update to avoid expiration issues
-    if (!interaction.deferred) {
-      await interaction.deferUpdate();
-    }
-  console.log('handleWormholeOptions called')
+  if (!interaction.deferred) {
+    await interaction.deferUpdate()
+  }
+  const userId = interaction.user.id
+  console.log(`User ID: ${userId}`)
+
+  const trooper: Trooper = (await getTrooper(userId)) || {
+    userId,
+    points: 0,
+    currentTerritory: territories.CAMP_SATOSHI,
+  }
 
   const options = [
     { label: `🌱 ${territories.CAMP_SATOSHI}`, value: territories.CAMP_SATOSHI, cost: '0 points' },
@@ -33,37 +38,36 @@ export async function handleWormholeOptions(interaction: ButtonInteraction) {
   const embed = new EmbedBuilder()
     .setTitle('Select your Destination:')
     .setDescription(
-      'Explore the territories in the Mezo Troopers universe. Each territory has unique challenges and rewards. Moving to higher territories costs points, so choose wisely!',
+      `Explore the territories in the Mezo Troopers universe. Each territory has unique challenges and rewards. Moving to higher territories costs points.\n\n **Current Points ✨ ${trooper.points}**\n\n Choose a destination:`,
     )
     .setColor(0x00ae86)
     .addFields(
       options.map((option) => ({
         name: option.label,
-        value: `Cost: **${option.cost}**`,
+        value: `> Cost: ${option.cost}`,
       })),
     )
 
   console.log('Sending wormhole options to user')
-  // Safely update the interaction
+
   try {
     await interaction.editReply({
       embeds: [embed],
       components: [actionRow],
-    });
+    })
   } catch (error) {
-    console.error('Error in wormhole:', error);
+    console.error('Error in wormhole:', error)
     await interaction.followUp({
       content: 'Something went wrong while updating the wormhole options. Please try again.',
       ephemeral: true,
-    });
+    })
   }
 }
 
 export async function handleWormholeCommand(interaction: ButtonInteraction, destination: string) {
-      // Defer the interaction update to avoid expiration issues
-      if (!interaction.deferred) {
-        await interaction.deferUpdate();
-      }
+  if (!interaction.deferred) {
+    await interaction.deferUpdate()
+  }
   console.log(`handleWormholeCommand called with destination: ${destination}`)
 
   const userId = interaction.user.id
@@ -78,11 +82,8 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
   console.log('Current trooper data:', trooper)
 
   if (trooper.currentTerritory === destination) {
-    console.log(`User already in ${destination} territory`)
-
-    await interaction.update({
+    await interaction.editReply({
       content: `You are already in ${bold(destination)} territory!`,
-      components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
     })
     return
   }
@@ -102,22 +103,20 @@ export async function handleWormholeCommand(interaction: ButtonInteraction, dest
     try {
       await interaction.editReply({
         embeds: [embed],
-      components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
-      });
+        components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
+      })
     } catch (error) {
-      console.error('Error in wormhole:', error);
+      console.error('Error in wormhole:', error)
       await interaction.followUp({
         content: 'Something went wrong while updating the wormhole options. Please try again.',
         ephemeral: true,
-      });
+      })
     }
-  
   } else {
     console.log(`Insufficient points for user to travel to ${destination}`)
 
-    await interaction.update({
+    await interaction.editReply({
       content: `You do not have enough points to travel to ${bold(destination)}.`,
-      components: [new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())],
     })
   }
 }
@@ -126,6 +125,10 @@ async function updatePlayerTerritory(userId: string, currentPoints: number, newT
   console.log(
     `updatePlayerTerritory called with userId: ${userId}, currentPoints: ${currentPoints}, newTerritory: ${newTerritory}`,
   )
+
+  if (newTerritory == 'Bitcoinfi Frontier') {
+    newTerritory = 'BitcoinFi Frontier'
+  }
 
   const gasFees: Record<string, number> = {
     [territories.CAMP_SATOSHI]: 0,
@@ -143,11 +146,7 @@ async function updatePlayerTerritory(userId: string, currentPoints: number, newT
       points: currentPoints - fee,
       currentTerritory: newTerritory,
     })
-    console.log('Player territory updated successfully')
-
     return true
   }
-
-  console.log('Not enough points for territory update')
   return false
 }

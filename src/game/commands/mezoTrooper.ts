@@ -10,14 +10,14 @@ export async function handleMezoTrooperCommand(interaction: CommandInteraction |
         'Stand strong, strategize, and fight to ensure the survival and prosperity of the Mezo realm.\n\n' +
         'Every decision counts—your journey awaits!',
     )
-    .setThumbnail(
-      'https://styles.redditmedia.com/t5_2u091/styles/communityIcon_ry3hant7cfq61.jpg?format=pjpg&s=8e91bf21dd61485a8544614621364c320f952602',
-    )
+
     .setColor(0xff494a)
+    .setImage(`https://raw.githubusercontent.com/ethboi/assets1/refs/heads/main/mezo-trooper.jpg`)
 
   await interaction.reply({
     embeds: [welcomeEmbed],
     content: '',
     components: [mainMenu()],
+    ephemeral: true,
   })
 }

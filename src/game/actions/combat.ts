@@ -1,10 +1,11 @@
-import { ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, time, Client } from 'discord.js'
+import { ButtonInteraction, bold, EmbedBuilder, ButtonBuilder, ButtonStyle, ActionRowBuilder, Client } from 'discord.js'
 import { getTrooper, insertOrUpdatePlayer } from '../../provider/mongodb'
 import { defences, quotes, weapons } from '../constants'
-import { addMillisecondsToDate, logPlayerDeath } from '../utilities'
+import { logPlayerDeath } from '../utilities'
 import { territories } from '../constants'
 import { handleSpecialOutcome } from './special'
 import { getFallbackTerritory } from './territories'
+import { continueButton } from './common/buttons'
 
 export async function handleCombatCommand(
   interaction: ButtonInteraction,
@@ -14,7 +15,7 @@ export async function handleCombatCommand(
 ) {
   // Defer the interaction update to avoid expiration issues
   if (!interaction.deferred) {
-    await interaction.deferUpdate();
+    await interaction.deferUpdate()
   }
   console.log('--- handleCombatCommand START ---')
 
@@ -153,7 +154,6 @@ export async function handleCombatCommand(
       title = '💀 Mission failed!'
       color = 0xffffff
 
-      // Log the player's death
       await logPlayerDeath(
         interaction.client as Client,
         userId,
@@ -161,8 +161,8 @@ export async function handleCombatCommand(
         trooper.currentTerritory,
         userChoice,
         powerLevel,
-        avatarUrl
-      );
+        avatarUrl,
+      )
 
       trooper.points = 0
       gifUrl = 'https://media1.tenor.com/m/0uCuBpDbYVYAAAAd/dizzy-death.gif'
@@ -171,9 +171,9 @@ export async function handleCombatCommand(
         trooper.currentTerritory = getFallbackTerritory(trooper.currentTerritory)
         messageContent = `You were ${bold('DEFEATED')} and lost all points! Falling back to ${bold(
           trooper.currentTerritory,
-        )}.`
+        )}.\n\n${getQuote()}`
       } else {
-        messageContent = `You were ${bold('DEFEATED')} and lost all points! 💀💀💀\n${getQuote()}`
+        messageContent = `You were ${bold('DEFEATED')} and lost all points! 💀💀💀\n\n${getQuote()}`
       }
 
       console.log('Mission Failure. Points reset to:', trooper.points)
@@ -188,26 +188,20 @@ export async function handleCombatCommand(
     const embed = new EmbedBuilder().setTitle(title).setDescription(messageContent).setColor(color)
     if (gifUrl) embed.setImage(gifUrl)
 
-    const continueButton = new ButtonBuilder()
-      .setCustomId('continue')
-      .setLabel('Continue')
-      .setStyle(ButtonStyle.Success)
-    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton)
+    const actionRow = new ActionRowBuilder<ButtonBuilder>().addComponents(continueButton())
 
-  // Safely update the interaction
-  try {
-    await interaction.editReply({
-      embeds: [embed],
-      components: [actionRow],
-    });
-  } catch (error) {
-    console.error('Error in handleAttackOptions:', error);
-    await interaction.followUp({
-      content: 'Something went wrong while updating the attack options. Please try again.',
-      ephemeral: true,
-    });
-  }
-
+    try {
+      await interaction.editReply({
+        embeds: [embed],
+        components: [actionRow],
+      })
+    } catch (error) {
+      console.error('Error in handleAttackOptions:', error)
+      await interaction.followUp({
+        content: 'Something went wrong while updating the attack options. Please try again.',
+        ephemeral: true,
+      })
+    }
 
     console.log('--- handleCombatCommand END ---')
   } catch (error) {
@@ -259,16 +253,16 @@ function getSuccessChance(powerLevel: number, territory: string): number {
   let successChance: number
   switch (territory) {
     case territories.CAMP_SATOSHI:
-      successChance = powerLevel === 100 ? 0.5 : powerLevel === 10 ? 0.75 : 0.95
+      successChance = powerLevel === 100 ? 0.7 : powerLevel === 10 ? 0.75 : 0.97
       break
     case territories.MATS_FARMING_BASE:
-      successChance = powerLevel === 100 ? 0.45 : powerLevel === 10 ? 0.7 : 0.9
+      successChance = powerLevel === 100 ? 0.7 : powerLevel === 10 ? 0.75 : 0.95
       break
     case territories.MEZO_COMMAND:
-      successChance = powerLevel === 100 ? 0.4 : powerLevel === 10 ? 0.65 : 0.85
+      successChance = powerLevel === 100 ? 0.6 : powerLevel === 10 ? 0.7 : 0.9
       break
     case territories.BITCOINFI_FRONTIER:
-      successChance = powerLevel === 100 ? 0.3 : powerLevel === 10 ? 0.5 : 0.8
+      successChance = powerLevel === 100 ? 0.5 : powerLevel === 10 ? 0.6 : 0.85
       break
     default:
       successChance = 0.95
