@@ -53,29 +53,41 @@ export async function updateLeaderboardMessage(client: Client) {
       return
     }
     const textChannel = channel as TextChannel
-    // let messageToUpdate
+    let messageToUpdate
 
     if (lastLeaderboardMessageId) {
       try {
-        // Try editing the existing leaderboard message
-        const existingMessage = await textChannel.messages.fetch(lastLeaderboardMessageId);
-        await existingMessage.edit({ embeds: [leaderboardEmbed] });
-        console.log('Updated existing leaderboard message.');
-      } catch (error) {
-        console.error('Failed to fetch or edit the leaderboard message, creating a new one.', error);
-        // Create a new leaderboard message if editing fails
-        const newMessage = await textChannel.send({ embeds: [leaderboardEmbed] });
-        lastLeaderboardMessageId = newMessage.id;
-        console.log('New leaderboard message created.');
+        messageToUpdate = await textChannel.messages.fetch(lastLeaderboardMessageId)
+      } catch {
+        console.log('Could not fetch the last leaderboard message.')
       }
-    } else {
-      // If no leaderboard message exists, create it
-      const newMessage = await textChannel.send({ embeds: [leaderboardEmbed] });
-      lastLeaderboardMessageId = newMessage.id;
-      console.log('New leaderboard message created and ID saved.');
     }
+    if (!messageToUpdate) {
+      try {
+        const messages = await textChannel.messages.fetch({ limit: 1 })
+        if (messages.size > 0) {
+          messageToUpdate = messages.first()
+        }
+      } catch {
+        console.log('Could not fetch the first message in the channel.')
+      }
+    }
+    if (messageToUpdate) {
+      try {
+        await messageToUpdate.edit({ embeds: [leaderboardEmbed] })
+        lastLeaderboardMessageId = messageToUpdate.id
+        console.log('Updated the leaderboard message.')
+      } catch (error) {
+        console.error('Failed to update the leaderboard message:', error)
+      }
+      return
+    }
+    // Send a new leaderboard message if no existing one is found
+    const newMessage = await textChannel.send({ embeds: [leaderboardEmbed] })
+    lastLeaderboardMessageId = newMessage.id // Track the new message ID
+    console.log('Sent a new leaderboard message and updated the tracker.')
   } catch (error) {
-    console.error('Failed to update leaderboard message:', error);
+    console.error('Failed to update leaderboard message:', error)
   }
 }
 
