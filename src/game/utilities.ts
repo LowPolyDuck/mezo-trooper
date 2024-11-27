@@ -1,5 +1,5 @@
 import { Client, EmbedBuilder, TextChannel, userMention } from 'discord.js'
-import { getLeaderBoard, clearAllPoints, incrementMatsInGame } from '../provider/mongodb'
+import { getLeaderBoard, incrementMatsInGame, resetPlayersToDefaults } from '../provider/mongodb'
 import { MATS_AWARDS } from './constants'
 import { LOG_CHANNEL_ID } from '../config/config'
 import { pointsManager } from '../dripApi/pointsManager'
@@ -109,7 +109,7 @@ export async function endRound(
   const leaderboard = await getLeaderBoard()
 
   if (leaderboard.length > 0) {
-    const topPlayers = leaderboard.slice(0, 3)
+    const topPlayers = leaderboard.slice(0, 10)
     for (const [index, player] of topPlayers.entries()) {
       const matsAwarded = MATS_AWARDS[index]
 
@@ -128,9 +128,10 @@ export async function endRound(
     })
     if (pastLeaderboards.length > 3) pastLeaderboards.pop() // Keep only last 3 days
   }
-  // Reset points for all players and log the action
-  await clearAllPoints()
-  console.log('All points reset for the new round.')
+  // Reset points and Territory for all players and log the action
+  await resetPlayersToDefaults();
+
+  console.log('All players have been reset to default state for the new round.');
 
   const userGameKey = `${guildId}-${userId}`
   activeGames.delete(userGameKey) // Clear the specific user’s game instance

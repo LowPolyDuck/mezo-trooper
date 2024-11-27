@@ -11,18 +11,24 @@ import { Trooper } from "../types/index";
 const mongoUri = `mongodb+srv://${MONGO_USER}:${MONGO_SECRET}${MONGO_URL}`;
 
 
-export async function clearAllPoints() {
+export async function resetPlayersToDefaults(): Promise<void> {
   const client = new MongoClient(mongoUri);
-  
   try {
     await client.connect();
     const collection = client.db(MONGO_DB).collection(MONGO_COLLECTION);
-    await collection.updateMany({}, { $set: { points: 0 } });
-    console.log('All player points have been reset to zero.');
+
+    await collection.updateMany({}, {
+      $set: {
+        points: 0,
+        currentTerritory: 'Camp Satoshi'
+      }
+    });
+
+    console.log('Reset all players to default state: 0 points and Camp Satoshi.');
   } catch (error) {
-    console.error('Failed to reset player points:', error);
+    console.error('Failed to reset players to defaults:', error);
   } finally {
-    await client.close(); 
+    await client.close();
   }
 }
 
